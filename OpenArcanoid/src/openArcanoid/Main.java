@@ -82,7 +82,7 @@ public class Main extends Application {
 				engine.reset();
 				String bgPath = engine.loadNextLevel(canvas.getWidth()/11,(canvas.getHeight()*0.66)/15);
 				try {
-					background = new BackgroundImage(new Image(new FileInputStream("/home/lexum/git/OpenArkanoid/OpenArcanoid/level/backgrounds/bg2.png")),BackgroundRepeat.REPEAT,BackgroundRepeat.REPEAT,BackgroundPosition.CENTER,new BackgroundSize(1024,1024,false,false,true,false));
+					background = new BackgroundImage(new Image(new FileInputStream(System.getProperty("user.dir")+bgPath)),BackgroundRepeat.REPEAT,BackgroundRepeat.REPEAT,BackgroundPosition.CENTER,new BackgroundSize(1024,1024,false,false,true,false));
 				} catch (FileNotFoundException e1) {
 					System.out.println(e1.getMessage());
 				}
