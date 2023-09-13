@@ -1,6 +1,8 @@
 package openArcanoid;
 
-import java.nio.file.Paths;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -46,7 +48,7 @@ public class Main extends Application {
 	private final int FONTSIZE = 47;
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		primaryStage.setTitle("OpenArcanoid");
+		primaryStage.setTitle("OpenArkanoid");
 		primaryStage.setOnCloseRequest(event -> loop.stop());
 		drawMenu(primaryStage);
 		loop = new AnimationTimer() {
@@ -79,7 +81,11 @@ public class Main extends Application {
 			public void handle(MouseEvent e) {
 				engine.reset();
 				String bgPath = engine.loadNextLevel(canvas.getWidth()/11,(canvas.getHeight()*0.66)/15);
-				background = new BackgroundImage(new Image(System.getProperty("user.dir")+bgPath),BackgroundRepeat.REPEAT,BackgroundRepeat.REPEAT,BackgroundPosition.CENTER,new BackgroundSize(1024,1024,false,false,true,false));
+				try {
+					background = new BackgroundImage(new Image(new FileInputStream("/home/lexum/git/OpenArkanoid/OpenArcanoid/level/backgrounds/bg2.png")),BackgroundRepeat.REPEAT,BackgroundRepeat.REPEAT,BackgroundPosition.CENTER,new BackgroundSize(1024,1024,false,false,true,false));
+				} catch (FileNotFoundException e1) {
+					System.out.println(e1.getMessage());
+				}
 				loop.start();
 				drawStage(primaryStage);
 			}
