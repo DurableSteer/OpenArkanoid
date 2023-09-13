@@ -1,0 +1,13 @@
+title=Round 1
+bg=/level/backgrounds/bg2.png
+{pink}
+{pink,lightblue}
+{pink,lightblue,green}
+{pink,lightblue,green,blue}
+{pink,lightblue,green,blue,red}
+{pink,lightblue,green,blue,red,pink}
+{pink,lightblue,green,blue,red,pink,lightblue}
+{pink,lightblue,green,blue,red,pink,lightblue,green}
+{pink,lightblue,green,blue,red,pink,lightblue,green,blue}
+{pink,lightblue,green,blue,red,pink,lightblue,green,blue,red}
+{silver,silver,silver,silver,silver,silver,silver,silver,silver,silver,pink}

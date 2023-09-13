@@ -1,0 +1,17 @@
+title=Round 1
+bg=/level/bg1.png
+(green)
+{}
+{white,white,white,gold,gold,gold,gold,gold,gold,gold,gold}
+{}
+(red)
+{}
+{gold,gold,gold,gold,gold,gold,gold,gold,white,white,white}
+{}
+(pink)
+{}
+{blue,blue,blue,gold,gold,gold,gold,gold,gold,gold,gold}
+{}
+(blue)
+{}
+{gold,gold,gold,gold,gold,gold,gold,gold,blue,blue,blue}

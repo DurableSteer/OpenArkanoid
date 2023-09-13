@@ -1,0 +1,8 @@
+title=Round 1
+bg=/level/backgrounds/bg1.png
+(silver)
+(red)
+(blue)
+(yellow)
+(pink)
+(green)
