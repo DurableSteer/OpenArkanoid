@@ -71,7 +71,7 @@ public class Engine {
 		points = 0;
 	}
 	public void next(boolean aPressed, boolean dPressed, double canvasWidth, double canvasHeight) {
-		//Moves all the Objects one turn
+		//Moves all the Objects one turn checking for collisions
 		if(isPaused())
 			return;
 		
