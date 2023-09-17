@@ -52,15 +52,20 @@ public class Main extends Application {
 		primaryStage.setOnCloseRequest(event -> loop.stop());
 		drawMenu(primaryStage);
 		loop = new AnimationTimer() {
+			private long lastCallTime = 0;
 			@Override
 			public void handle(long now) {
-				engine.next(aPressed,dPressed,WINDOWWIDTH,WINDOWHEIGHT);
-				if(engine.gameOver()) 
-					drawGameOver(primaryStage, canvas.getGraphicsContext2D());
-				else if (engine.levelCleared())
-					drawStageCleared(primaryStage,canvas.getGraphicsContext2D());
-				else
-					drawStage(primaryStage);
+				if((now-lastCallTime) >= 16000000) { //update at intervals independent of fps
+					engine.next(aPressed,dPressed,WINDOWWIDTH,WINDOWHEIGHT);
+					if(engine.gameOver()) 
+						drawGameOver(primaryStage, canvas.getGraphicsContext2D());
+					else if (engine.levelCleared()) {
+						drawStageCleared(primaryStage,canvas.getGraphicsContext2D());
+					}
+					else
+						drawStage(primaryStage);
+					lastCallTime = now;
+				}
 			}
 		};
 	}
@@ -197,11 +202,17 @@ public class Main extends Application {
 	private void drawMovables(GraphicsContext gc) {
 		gc.setFill(engine.getPad().getColor());
 		gc.fillRect(engine.getPad().getPosition().getX(), engine.getPad().getPosition().getY(), engine.getPad().getWidth(), engine.getPad().getHeight());
-		gc.setStroke(Color.BLACK);
+		gc.setStroke(Color.WHITE);
 		gc.strokeRect(engine.getPad().getPosition().getX(), engine.getPad().getPosition().getY(), engine.getPad().getWidth(), engine.getPad().getHeight());
+		gc.setFill(Color.web("d82800"));
+		gc.fillRoundRect(engine.getPad().getPosition().getX()-2,engine.getPad().getPosition().getY()-1,engine.getPad().getWidth()*0.17,engine.getPad().getHeight()+2,10,10);
+		gc.strokeRoundRect(engine.getPad().getPosition().getX()-2,engine.getPad().getPosition().getY()-1,engine.getPad().getWidth()*0.17,engine.getPad().getHeight()+2,10,10);
+		gc.fillRoundRect(engine.getPad().getPosition().getX()+engine.getPad().getWidth()*0.83+2,engine.getPad().getPosition().getY()-1,engine.getPad().getWidth()*0.17,engine.getPad().getHeight()+2,10,10);
+		gc.strokeRoundRect(engine.getPad().getPosition().getX()+engine.getPad().getWidth()*0.83+2,engine.getPad().getPosition().getY()-1,engine.getPad().getWidth()*0.17,engine.getPad().getHeight()+2,10,10);
+
 		for(Ball b : engine.getBalls()) {
 			gc.setFill(b.getColor());
-			gc.fillOval(b.getPosition().getX(), b.getPosition().getY(), b.getWidth(), b.getHeight());
+			gc.fillOval(b.getPosition().getX(), b.getPosition().getY(), b.getWidth()+1, b.getHeight());
 			gc.setStroke(Color.WHITE);
 			gc.strokeOval(b.getPosition().getX(), b.getPosition().getY(), b.getWidth(), b.getHeight());
 		}
@@ -242,7 +253,12 @@ public class Main extends Application {
 			@Override
 			public void handle(KeyEvent e) {
 				canvas.getScene().removeEventFilter(KeyEvent.KEY_PRESSED, this);
-				engine.loadNextLevel(canvas.getWidth()/11,(canvas.getHeight()*0.66)/15);
+				String bgPath = engine.loadNextLevel(canvas.getWidth()/11,(canvas.getHeight()*0.66)/15);
+				try {
+					background = new BackgroundImage(new Image(new FileInputStream(System.getProperty("user.dir")+bgPath)),BackgroundRepeat.REPEAT,BackgroundRepeat.REPEAT,BackgroundPosition.CENTER,new BackgroundSize(1024,1024,false,false,true,false));
+				} catch (FileNotFoundException e1) {
+					System.out.println(e1.getMessage());
+				}
 				loop.start();
 				drawStage(primaryStage);
 			}

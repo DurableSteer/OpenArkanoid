@@ -12,7 +12,8 @@ import javafx.scene.paint.Color;
 
 public class Engine {
 	private final int BASELIVES = 4;
-	private final double BASESPEED = 2;
+	private final double BASESPEED = 4;
+	private final double MAXSPEED = 8;
 	private boolean isPaused = false;
 	private int lives = BASELIVES;
 	private int points = 0;
@@ -74,7 +75,7 @@ public class Engine {
 		//Moves all the Objects one turn checking for collisions
 		if(isPaused())
 			return;
-		
+
 		movePad(aPressed,dPressed,canvasWidth);
 
 		//Ball movement
@@ -85,16 +86,18 @@ public class Engine {
 			Ball tmp = new Ball(b);
 			tmp.getPosition().add(b.getDirection().multBy(ballSpeed));  //create a temporary ball at the next Position
 
-			if(isCollidingWithBorder(tmp, canvasWidth, canvasHeight)) { //tmp hit a Border
+			if(isCollidingWithBorder(tmp, canvasWidth, canvasHeight)) { //ball hit a Border
 				Side collisionSide = getCollisionSide(new Vector2D(0,0), new Vector2D(canvasWidth,canvasHeight), tmp);
 				handleBallBorderCollision(it, b, tmp,collisionSide);
 			}
-			if( areColliding(pad, tmp))  								//ball hit the pad
+			if( areColliding(pad, tmp))  //ball hit the pad
 				handleBallPadCollision(b, tmp);
-			else 					
+			else                        
 				handleBallBlockCollisions(b,tmp);
+
 			b.getPosition().add(b.getDirection().multBy(ballSpeed));
 		}
+
 	}
 	
 	private void movePad(boolean aPressed, boolean dPressed, double canvasWidth) {
@@ -124,63 +127,87 @@ public class Engine {
 		if(collisionSide == Side.TOP) {
 			pushOut(pad,b,Side.TOP);
 			double dist = getDistFromCenter(pad,tmp);
-			if(Math.abs(dist) < (pad.getWidth()*0.25)/2){//deadzone in the middle of the pad is hit
+			if(Math.abs(dist) < (pad.getWidth()*0.20)/2)//deadzone in the middle of the pad is hit
 				b.reflect(Side.TOP);
-				System.out.println("top");
-			}
 			else if(dist > 0) {                               //right side of the pad is hit
 				b.setDirection(0,-1);
-				b.getDirection().rotate(((dist - (pad.getWidth()*0.25/2))/(pad.getWidth()*0.375))*(Math.PI/4));
+				b.getDirection().rotate(((dist - (pad.getWidth()*0.20/2))/(pad.getWidth()*0.4))*(Math.PI/3));
 			}
 			else {											//left side of the pad is hit
 				b.setDirection(0,-1);
-				b.getDirection().rotate(((Math.abs(dist) - (pad.getWidth()*0.25/2))/(pad.getWidth()*0.375))*(Math.PI/4));
-				b.reflect(Side.TOP);
+				b.getDirection().rotate(((Math.abs(dist) - (pad.getWidth()*0.20/2))/(pad.getWidth()*0.4))*(Math.PI/3));
+				b.reflect(Side.LEFT);
 			}
-			if(b.getSpeedMult() < 5)
-				b.setSpeedMult(b.getSpeedMult()+0.03);
+			if(b.getSpeedMult() < MAXSPEED)
+				b.setSpeedMult(b.getSpeedMult()+0.04);
 		}
 		else if(collisionSide == Side.BOTTOM) {
 			pushOut(pad,b,Side.BOTTOM);
-			b.reflect(Side.BOTTOM);
+			
 		}
 		else if(collisionSide == Side.LEFT){ 
 			pushOut(pad,b,Side.LEFT);
+			b.setDirection(0, -1);
+			b.getDirection().rotate(Math.PI/3);
 			b.reflect(Side.LEFT);
-			System.out.println("left");
 		}
 		else{												//ball hit the right of the pad
 			pushOut(pad,b,Side.RIGHT);
+			b.setDirection(0, -1);
+			b.getDirection().rotate(Math.PI/3);
 			b.reflect(Side.RIGHT);
-			System.out.println("right");
 		}
 	}
-	private void handleBallBlockCollisions(Ball b, Ball tmp) {
+	private void handleBallBlockCollisions(Ball b, Ball tmp) { //improve this logic
 		ArrayList<Block> collidingBlocks = blocks.findColliding(tmp);
+		if(collidingBlocks.isEmpty())
+			return; //no collision, nothing to do
+		
+		if(collidingBlocks.size() > 1) {
+			Block block = collidingBlocks.get(0);
+			Block block2 = collidingBlocks.get(1);
+			Side collisionSide1 = getCollisionSide(block,tmp);
+			Side collisionSide2 = getCollisionSide(block2,tmp);
+			if(collisionSide1 == collisionSide2) { // if two blocks of the same orientation are hit
+				if(areColliding(block,tmp) || areColliding(block2,tmp)) { 
+					b.reflect(collisionSide1);
+					block.getHitBy(b);
+					if(block.getHitpoints() == 0) {
+						points += block.getPoints();
+						blocks.delete(block);
+					}
+				}
+			}
+			else {
+				if(areColliding(block,tmp) && areColliding(block2,tmp)) {
+					if(block.getPosition().getY() == block2.getPosition().getY()) //if the vertical slit between blocks is hit
+						b.reflect(Side.BOTTOM);
+					else if(block.getPosition().getX() == block2.getPosition().getX()) //if the horizontal slit between blocks is hit
+						b.reflect(Side.LEFT);
+					else {                            //if the ball hit two Blocks in a corner
+						b.reflect(Side.BOTTOM);
+						b.reflect(Side.LEFT);
+					}
 
-		if(collidingBlocks.size() != 0) {
-			tmp.getPosition().add(new Vector2D(2,2));
-			Block block = collidingBlocks.get(0); 
-
-			// first applies a rough rectangle Based collision detection
+					block.getHitBy(b);
+					if(block.getHitpoints() == 0) {
+						points += block.getPoints();
+						blocks.delete(block);
+					}
+					block2.getHitBy(b);
+					if(block2.getHitpoints() == 0) {
+						points += block2.getPoints();
+						blocks.delete(block2);
+					}
+				}
+			}
+		}
+		else {
+			Block block = collidingBlocks.get(0);
 			if(areColliding(block, tmp)) {				// then apply an accurate collision detection
 				Side collisionSide = getCollisionSide(block,tmp);
-				if(collisionSide == Side.TOP) {											//collision with the top of the block
-					b.setPosition(b.getPosition().getX(),block.getPosition().getY()-b.getHeight()-1);
-					b.reflect(Side.TOP);
-				}
-				else if(collisionSide == Side.BOTTOM){									//collision with the bottom
-					b.setPosition(b.getPosition().getX(),block.getPosition().getY()+block.getHeight()+1);
-					b.reflect(Side.BOTTOM);
-				}
-				else if(collisionSide == Side.LEFT) { 									//collision with the left side
-					b.setPosition(block.getPosition().getX()-b.getWidth()-1,b.getPosition().getY());
-					b.reflect(Side.LEFT);
-				}
-				else { 																					//collision with the right side
-					b.setPosition(block.getPosition().getX()+block.getWidth()+1,b.getPosition().getY());
-					b.reflect(Side.RIGHT);
-				}
+				//pushOut(block,b,collisionSide);
+				b.reflect(collisionSide);
 				block.getHitBy(b);
 				if(block.getHitpoints() == 0) {
 					points += block.getPoints();
@@ -240,7 +267,7 @@ public class Engine {
 
 		//special case of an intersection with the corner
 		double cornerDistance = Math.pow(middleDistX - rectSize.getX()/2,2) + Math.pow(middleDistY - rectSize.getY(),2);
-		return (cornerDistance <= Math.pow(ball.getWidth()/2,2));
+		return (cornerDistance < Math.pow(ball.getWidth(),2));// lightly inacurate, to improve gameplay
 	}
 
 	public String loadNextLevel(double blockWidth,double blockHeight) {
