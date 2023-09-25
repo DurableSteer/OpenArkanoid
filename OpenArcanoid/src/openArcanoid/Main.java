@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -13,7 +15,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
-import javafx.scene.effect.BoxBlur;
+import javafx.scene.control.TextField;
 import javafx.scene.effect.MotionBlur;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
@@ -28,19 +30,20 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.CycleMethod;
-import javafx.scene.paint.LinearGradient;
-import javafx.scene.paint.Stop;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 public class Main extends Application {
 	private static volatile boolean aPressed = false;
 	private static volatile boolean dPressed = false;
-	private final double WINDOWWIDTH = 600;
-	private final double WINDOWHEIGHT = 400;
-	private Canvas canvas = new Canvas(WINDOWWIDTH,WINDOWHEIGHT);
+	private double RENDERWIDTH = 600;
+	private double RENDERHEIGHT = 400;
+	private double windowWidthMod = 1;
+	private double windowHeightMod = 1;
+	private Canvas canvas = new Canvas(RENDERWIDTH*windowWidthMod,RENDERHEIGHT*windowHeightMod);
 	protected static Engine engine = new Engine();
 	private AnimationTimer loop;
 	private final String FONTTYPE = "Unispace-bold";
@@ -50,42 +53,51 @@ public class Main extends Application {
 	public void start(Stage primaryStage) throws Exception {
 		primaryStage.setTitle("OpenArkanoid");
 		primaryStage.setOnCloseRequest(event -> loop.stop());
+		primaryStage.initStyle(StageStyle.DECORATED);
+		primaryStage.setResizable(false);
+		primaryStage.fullScreenProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> prop, Boolean wasIconified, Boolean isIconified) {
+            }
+        });
 		drawMenu(primaryStage);
 		loop = new AnimationTimer() {
 			private long lastCallTime = 0;
 			@Override
 			public void handle(long now) {
-				if((now-lastCallTime) >= 16000000) { //update at intervals independent of fps
-					engine.next(aPressed,dPressed,WINDOWWIDTH,WINDOWHEIGHT);
+					engine.next(aPressed, dPressed, ((double)(now-lastCallTime))/3000000);
 					if(engine.gameOver()) 
 						drawGameOver(primaryStage, canvas.getGraphicsContext2D());
 					else if (engine.levelCleared()) {
 						drawStageCleared(primaryStage,canvas.getGraphicsContext2D());
 					}
+					else if(engine.isPaused()) {
+						loop.stop();
+						drawMenu(primaryStage);
+					}
 					else
 						drawStage(primaryStage);
-					lastCallTime = now;
-				}
+				lastCallTime = now;
 			}
 		};
 	}
 	public void drawMenu(Stage primaryStage) {
 		StackPane root  = new StackPane();
 		root.setAlignment(Pos.CENTER);
-		Scene scene = new Scene(root, WINDOWWIDTH, WINDOWHEIGHT);
+		Scene scene = new Scene(root, RENDERWIDTH*windowWidthMod, RENDERHEIGHT*windowHeightMod);
 		root.setBackground(new Background(new BackgroundFill(Color.LIGHTCYAN,CornerRadii.EMPTY,Insets.EMPTY)));
 		VBox MenuBox = new VBox();
 		MenuBox.setBackground(new Background(new BackgroundFill(Color.ANTIQUEWHITE,CornerRadii.EMPTY,Insets.EMPTY)));
 		MenuBox.setAlignment(Pos.CENTER);
-		Label play = new Label("Play");
+		Label newGame = new Label("New Game");
 		Label quit = new Label("Quit");
-		play.setFont(new Font(FONTTYPE,FONTSIZE));
+		newGame.setFont(new Font(FONTTYPE,FONTSIZE));
 		quit.setFont(new Font(FONTTYPE,FONTSIZE));
-		play.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		newGame.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent e) {
 				engine.reset();
-				String bgPath = engine.loadNextLevel(canvas.getWidth()/11,(canvas.getHeight()*0.66)/15);
+				String bgPath = engine.loadNextLevel();
 				try {
 					background = new BackgroundImage(new Image(new FileInputStream(System.getProperty("user.dir")+bgPath)),BackgroundRepeat.REPEAT,BackgroundRepeat.REPEAT,BackgroundPosition.CENTER,new BackgroundSize(1024,1024,false,false,true,false));
 				} catch (FileNotFoundException e1) {
@@ -101,12 +113,11 @@ public class Main extends Application {
 				System.exit(0);
 			}
 		});
-
-		play.setOnMouseEntered(new EventHandler<MouseEvent>() {
+		newGame.setOnMouseEntered(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent e) {
-				play.setScaleX(1.5);
-				play.setScaleY(1.5);
+				newGame.setScaleX(1.5);
+				newGame.setScaleY(1.5);
 			}
 		});
 		quit.setOnMouseEntered(new EventHandler<MouseEvent>() {
@@ -116,11 +127,11 @@ public class Main extends Application {
 				quit.setScaleY(1.5);
 			}
 		});
-		play.setOnMouseExited(new EventHandler<MouseEvent>() {
+		newGame.setOnMouseExited(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent e) {
-				play.setScaleX(1);
-				play.setScaleY(1);
+				newGame.setScaleX(1);
+				newGame.setScaleY(1);
 			}
 		});
 		quit.setOnMouseExited(new EventHandler<MouseEvent>() {
@@ -130,18 +141,121 @@ public class Main extends Application {
 				quit.setScaleY(1);
 			}
 		});
-		MenuBox.getChildren().add(play);
+		
+		if(engine.isPaused()) {
+			Label continueGame = new Label("continue");
+			continueGame.setFont(new Font(FONTTYPE,FONTSIZE));
+			continueGame.setOnMouseClicked(new EventHandler<MouseEvent>() {
+				@Override
+				public void handle(MouseEvent e) {
+					engine.unpause();
+					loop.start();
+				}
+			});
+			continueGame.setOnMouseEntered(new EventHandler<MouseEvent>() {
+				@Override
+				public void handle(MouseEvent e) {
+					continueGame.setScaleX(1.5);
+					continueGame.setScaleY(1.5);
+				}
+			});
+			continueGame.setOnMouseExited(new EventHandler<MouseEvent>() {
+				@Override
+				public void handle(MouseEvent e) {
+					continueGame.setScaleX(1);
+					continueGame.setScaleY(1);
+				}
+			});
+			MenuBox.getChildren().add(continueGame);
+		}
+		MenuBox.getChildren().add(newGame);
+		if(!engine.isPaused()) {
+			Label settings = new Label("Settings");
+			settings.setFont(new Font(FONTTYPE,FONTSIZE));
+			settings.setOnMouseClicked(new EventHandler<MouseEvent>() {
+				@Override
+				public void handle(MouseEvent e) {
+					drawSettings(primaryStage);
+				}
+			});
+			settings.setOnMouseEntered(new EventHandler<MouseEvent>() {
+				@Override
+				public void handle(MouseEvent e) {
+					settings.setScaleX(1.5);
+					settings.setScaleY(1.5);
+				}
+			});
+			settings.setOnMouseExited(new EventHandler<MouseEvent>() {
+				@Override
+				public void handle(MouseEvent e) {
+					settings.setScaleX(1);
+					settings.setScaleY(1);
+				}
+			});
+			MenuBox.getChildren().add(settings);
+		}
+			
 		MenuBox.getChildren().add(quit);
-		MenuBox.setMaxSize(WINDOWWIDTH*0.8, WINDOWHEIGHT*0.9);
+		MenuBox.setMaxSize(RENDERWIDTH*windowWidthMod*0.8, RENDERHEIGHT*windowHeightMod*0.9);
 		root.getChildren().add(MenuBox);
 		primaryStage.setScene(scene);
 		primaryStage.show();
 	}
-	public void drawStage(Stage primaryStage) {
+	
+	public void drawSettings(Stage primaryStage) {
 		StackPane root  = new StackPane();
 		root.setAlignment(Pos.CENTER);
+		Scene scene = new Scene(root, RENDERWIDTH*windowWidthMod, RENDERHEIGHT*windowHeightMod);
+		root.setBackground(new Background(new BackgroundFill(Color.LIGHTCYAN,CornerRadii.EMPTY,Insets.EMPTY)));
+		VBox MenuBox = new VBox();
+		MenuBox.setBackground(new Background(new BackgroundFill(Color.ANTIQUEWHITE,CornerRadii.EMPTY,Insets.EMPTY)));
+		MenuBox.setAlignment(Pos.CENTER);
+		TextField size = new TextField(RENDERWIDTH*windowWidthMod+"x"+RENDERHEIGHT*windowHeightMod);
+		Label setSize = new Label("Set Size");
+		setSize.setFont(new Font(FONTTYPE,FONTSIZE));
+		setSize.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				try {
+					String[] args = size.getText().strip().split("x");
+					windowWidthMod = Double.parseDouble(args[0])/RENDERWIDTH;
+					windowHeightMod = Double.parseDouble(args[1])/RENDERHEIGHT;
+					canvas = new Canvas(RENDERWIDTH*windowWidthMod,RENDERHEIGHT*windowHeightMod);
+					drawMenu(primaryStage);
+				}catch(IndexOutOfBoundsException ex) {
+					System.out.println("Please input the new windowsize in the following format: 1280x720 .");
+				}
+			}
+		});
+		setSize.setOnMouseEntered(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				setSize.setScaleX(1.5);
+				setSize.setScaleY(1.5);
+			}
+		});
+		setSize.setOnMouseExited(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				setSize.setScaleX(1);
+				setSize.setScaleY(1);
+			}
+		});
+		MenuBox.getChildren().add(size);
+		MenuBox.getChildren().add(setSize);
+		MenuBox.setMaxSize(RENDERWIDTH*windowWidthMod*0.8, RENDERHEIGHT*windowHeightMod*0.9);
+		root.getChildren().add(MenuBox);
+		primaryStage.setScene(scene);
+		primaryStage.show();
+	}
+	
+	public void drawStage(Stage primaryStage) {
+		StackPane root  = new StackPane();
 		root.setBackground(new Background(background));
-		Scene scene = new Scene(root, WINDOWWIDTH, WINDOWHEIGHT);
+		Scene scene = new Scene(root, RENDERWIDTH*windowWidthMod+24, RENDERHEIGHT*windowHeightMod+22);
+		Canvas borderCanvas = new Canvas(RENDERWIDTH*windowWidthMod+24,RENDERHEIGHT*windowHeightMod+22);
+		drawBorder(borderCanvas.getGraphicsContext2D());
+		root.getChildren().add(borderCanvas);
 		scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent e) {
@@ -183,56 +297,76 @@ public class Main extends Application {
 			});
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-		drawBlocks(gc);
 		drawMovables(gc);
+		drawBlocks(gc);
 		root.getChildren().add(canvas);
+
 		primaryStage.setScene(scene);
 		primaryStage.show();
 	}
 	private void drawBlocks(GraphicsContext gc) {
 		for(Block b : engine.getAllBlocks()) {
+			double xPos = b.getPosition().getX()*windowWidthMod;
+			double yPos = b.getPosition().getY()*windowHeightMod;
+			double width = b.getWidth()*windowWidthMod;
+			double height = b.getHeight()*windowHeightMod;
 			gc.setFill(b.getColor());
-			gc.fillRect(b.getPosition().getX(), b.getPosition().getY(), b.getWidth(), b.getHeight());
+			gc.fillRect(xPos,yPos,width,height);
 			gc.setStroke(Color.BLACK);
-			gc.strokeRect(b.getPosition().getX(), b.getPosition().getY(), b.getWidth(), b.getHeight());
-			if(b.getHitpoints()>1)
-				gc.strokeRect(b.getPosition().getX()+b.getWidth()*0.02, b.getPosition().getY()+b.getHeight()*0.05, b.getWidth()*0.96, b.getHeight()*0.9);
+			gc.strokeRect(xPos,yPos,width,height);
+			if(b.getHitpoints() > 1)
+				gc.strokeRect(xPos+width*0.02, yPos+height*0.05, width*0.96, height*0.9);
 		}
 	}
 	private void drawMovables(GraphicsContext gc) {
-		gc.setFill(engine.getPad().getColor());
-		gc.fillRect(engine.getPad().getPosition().getX(), engine.getPad().getPosition().getY(), engine.getPad().getWidth(), engine.getPad().getHeight());
-		gc.setStroke(Color.WHITE);
-		gc.strokeRect(engine.getPad().getPosition().getX(), engine.getPad().getPosition().getY(), engine.getPad().getWidth(), engine.getPad().getHeight());
-		gc.setFill(Color.web("d82800"));
-		gc.fillRoundRect(engine.getPad().getPosition().getX()-2,engine.getPad().getPosition().getY()-1,engine.getPad().getWidth()*0.17,engine.getPad().getHeight()+2,10,10);
-		gc.strokeRoundRect(engine.getPad().getPosition().getX()-2,engine.getPad().getPosition().getY()-1,engine.getPad().getWidth()*0.17,engine.getPad().getHeight()+2,10,10);
-		gc.fillRoundRect(engine.getPad().getPosition().getX()+engine.getPad().getWidth()*0.83+2,engine.getPad().getPosition().getY()-1,engine.getPad().getWidth()*0.17,engine.getPad().getHeight()+2,10,10);
-		gc.strokeRoundRect(engine.getPad().getPosition().getX()+engine.getPad().getWidth()*0.83+2,engine.getPad().getPosition().getY()-1,engine.getPad().getWidth()*0.17,engine.getPad().getHeight()+2,10,10);
-
+		MotionBlur mb = new MotionBlur();
+		mb.setRadius(4);
 		for(Ball b : engine.getBalls()) {
+			double xPos = b.getPosition().getX()*windowWidthMod;
+			double yPos = b.getPosition().getY()*windowHeightMod;
+			double width = b.getWidth()*windowWidthMod;
+			double height = b.getHeight()*windowHeightMod;
 			gc.setFill(b.getColor());
-			gc.fillOval(b.getPosition().getX(), b.getPosition().getY(), b.getWidth()+1, b.getHeight());
+			gc.fillOval(xPos, yPos, width+1, height);//warum +1?
 			gc.setStroke(Color.WHITE);
-			gc.strokeOval(b.getPosition().getX(), b.getPosition().getY(), b.getWidth(), b.getHeight());
+			gc.strokeOval(xPos, yPos, width, height);
 		}
+		gc.applyEffect(mb);
 		if(engine.getPad().hasBall()) {
 			Ball b = engine.getPad().getBall();
+			double xPos = b.getPosition().getX()*windowWidthMod;
+			double yPos = b.getPosition().getY()*windowHeightMod;
+			double width = b.getWidth()*windowWidthMod;
+			double height = b.getHeight()*windowHeightMod;
 			gc.setFill(b.getColor());
-			gc.fillOval(b.getPosition().getX(), b.getPosition().getY(), b.getWidth(), b.getHeight());
+			gc.fillOval(xPos, yPos, width+1, height);//warum +1?
 			gc.setStroke(Color.WHITE);
-			gc.strokeOval(b.getPosition().getX(), b.getPosition().getY(), b.getWidth(), b.getHeight());
+			gc.strokeOval(xPos, yPos, width, height);
 		}
+		Pad p = engine.getPad();
+		double xPos = p.getPosition().getX()*windowWidthMod;
+		double yPos = p.getPosition().getY()*windowHeightMod;
+		double width = p.getWidth()*windowWidthMod;
+		double height = p.getHeight()*windowHeightMod;
+		gc.setFill(p.getColor());
+		gc.fillRect(xPos, yPos, width, height);
+		gc.setStroke(Color.WHITE);
+		gc.strokeRect(xPos, yPos, width, height);
+		gc.setFill(Color.web("d82800"));
+		gc.fillRoundRect(xPos-2,yPos-1,width*0.17,height+2,10,10);
+		gc.strokeRoundRect(xPos-2,yPos-1,width*0.17,height+2,10,10);
+		gc.fillRoundRect(xPos+width*0.83+2,yPos-1,width*0.17,height+2,10,10);
+		gc.strokeRoundRect(xPos+width*0.83+2,yPos-1,width*0.17,height+2,10,10);
 	}
 	private void drawGameOver(Stage primaryStage,GraphicsContext gc) {
 		loop.stop();
 		gc.setTextAlign(TextAlignment.CENTER);
 		gc.setFont(new Font(FONTTYPE,FONTSIZE));
-		gc.fillText("Game Over!", WINDOWWIDTH*0.5, WINDOWHEIGHT*0.4);//centered
+		gc.fillText("Game Over!", RENDERWIDTH*windowWidthMod*0.5, RENDERHEIGHT*windowHeightMod*0.4);//centered
 		gc.setFont(new Font(FONTTYPE,FONTSIZE-20));
-		gc.fillText("Your Score: "+engine.getPoints(),WINDOWWIDTH*0.5,WINDOWHEIGHT*0.48);
+		gc.fillText("Your Score: "+engine.getPoints(), RENDERWIDTH*windowWidthMod*0.5, RENDERHEIGHT*windowHeightMod*0.48);
 		gc.setFont(new Font(FONTTYPE,FONTSIZE-35));
-		gc.fillText("Press any key to continue.",WINDOWWIDTH*0.5,WINDOWHEIGHT*0.87);
+		gc.fillText("Press any key to continue.", RENDERWIDTH*windowWidthMod*0.5, RENDERHEIGHT*windowHeightMod*0.87);
 		canvas.getScene().setOnKeyPressed(new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent e) {
@@ -246,14 +380,14 @@ public class Main extends Application {
 		loop.stop();
 		gc.setTextAlign(TextAlignment.CENTER);
 		gc.setFont(new Font(FONTTYPE,FONTSIZE));
-		gc.fillText("Stage Clear!", WINDOWWIDTH*0.5, WINDOWHEIGHT*0.4);
+		gc.fillText("Stage Clear!", RENDERWIDTH*windowWidthMod*0.5, RENDERHEIGHT*windowHeightMod*0.4);
 		gc.setFont(new Font(FONTTYPE,FONTSIZE-35));
-		gc.fillText("Press any key to continue.",WINDOWWIDTH*0.5,WINDOWHEIGHT*0.87);
+		gc.fillText("Press any key to continue.",RENDERWIDTH*windowWidthMod*0.5,RENDERHEIGHT*windowHeightMod*0.87);
 		canvas.getScene().setOnKeyPressed(new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent e) {
 				canvas.getScene().removeEventFilter(KeyEvent.KEY_PRESSED, this);
-				String bgPath = engine.loadNextLevel(canvas.getWidth()/11,(canvas.getHeight()*0.66)/15);
+				String bgPath = engine.loadNextLevel();
 				try {
 					background = new BackgroundImage(new Image(new FileInputStream(System.getProperty("user.dir")+bgPath)),BackgroundRepeat.REPEAT,BackgroundRepeat.REPEAT,BackgroundPosition.CENTER,new BackgroundSize(1024,1024,false,false,true,false));
 				} catch (FileNotFoundException e1) {
@@ -264,7 +398,41 @@ public class Main extends Application {
 			}
 		});
 	}
-	
+	private void drawBorder(GraphicsContext gc) {
+		Canvas borderCanvas = gc.getCanvas();
+		gc.setFill(Color.web("#bdbdbb"));
+		gc.fillRoundRect(2, 2, 8, borderCanvas.getHeight(), 7, 7);
+		gc.fillRoundRect(borderCanvas.getWidth()-10, 2, 8, borderCanvas.getHeight(), 7, 7);
+		gc.fillRoundRect(2, 2, borderCanvas.getWidth()-4, 8, 7, 7);
+		//gc.fillRoundRect(2, borderCanvas.getHeight()-10, borderCanvas.getWidth()-4, 8, 7, 7);
+		
+		for(int i=0;i < ((borderCanvas.getWidth())/100);i++) {
+			drawVent(gc,35+i*100,0,true);
+			//drawVent(gc,35+i*100,borderCanvas.getHeight()-12,true);
+		}
+		for(int i=0;i < ((borderCanvas.getHeight())/100);i++) {
+			drawVent(gc,0,35+i*100,false);
+			drawVent(gc,borderCanvas.getWidth()-12,35+i*100,false);
+		}
+			
+	}
+	private void drawVent(GraphicsContext gc, double x, double y, boolean horizontal) {
+		gc.setFill(Color.web("#bdbdbb"));
+		double xSize = 50;
+		double ySize = 12;
+		if(!horizontal) {
+			xSize = 12;
+			ySize = 50;
+		}
+		gc.fillRoundRect(x, y, xSize, ySize, 7, 7);
+		for(int i=0;i<5;i++) {
+			if(horizontal)
+				gc.strokeRect(x+xSize/3+i*4,y,1,ySize);
+			else
+				gc.strokeRect(x,y+ySize/3+i*4,xSize,1);
+		}
+		gc.strokeRoundRect(x, y, xSize, ySize, 7, 7);
+	}
 	public static void main(String[] args) {
 		launch(args);
 	}
