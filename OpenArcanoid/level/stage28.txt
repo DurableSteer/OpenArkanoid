@@ -1,0 +1,12 @@
+title=Round 29
+bg=/level/backgrounds/bg1.png
+{blue,blue,blue,blue,gold,,gold,blue,blue,blue,blue}
+{green,green,green,green,gold,,gold,green,green,green,green}
+{gold,gold,gold,gold,gold,,gold,gold,gold,gold,gold}
+{pink,pink,pink,pink,gold,,gold,pink,pink,pink,pink}
+{orange,orange,orange,orange,gold,,gold,orange,orange,orange,orange}
+{blue,blue,blue,blue,gold,,gold,blue,blue,blue,blue}
+{silver,silver,silver,silver,gold,,gold,silver,silver,silver,silver}
+{orange,orange,orange,orange,gold,,gold,orange,orange,orange,orange}
+{pink,pink,pink,pink,gold,,gold,pink,pink,pink,pink}
+{green,green,green,green,gold,,gold,green,green,green,green}

@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
-
+import java.util.Random;
 
 import javafx.scene.paint.Color;
 
@@ -16,13 +16,17 @@ public class Engine {
 	private final double MAXSPEED = 1.75;
 	private final double FIELDWIDTH = 600;
 	private final double FIELDHEIGHT = 400;
+	private final double POWERUPCHANCE = 0.2;
 	private boolean isPaused = false;
 	private int lives = BASELIVES;
 	private int points = 0;
 	private BlockXTree blocks = new BlockXTree();
 	private ArrayList<Ball> balls = new ArrayList<>();
+	private ArrayList<Projectile> shots = new ArrayList<>();
+	private ArrayList<PowerUp> powerUps = new ArrayList<>();
 	private Pad pad;
 	private int currLevel = 0;
+	private Random rand = new Random();
 
 	public int getPoints() {
 		return points;
@@ -48,7 +52,7 @@ public class Engine {
 		return isPaused;
 	}
 
-	public void pause() { 
+	public void pause() {
 		isPaused = true;
 	}
 	public void unpause() {
@@ -56,12 +60,16 @@ public class Engine {
 	}
 
 	public boolean levelCleared() {
-		if(blocks.isEmpty()) {
-			currLevel = (currLevel+1)%36;
-			balls = new ArrayList<Ball>();
-			return true;
+		for(Block block : blocks.getAllBlocks()) {
+			if(!block.getColor().equals(Color.web("f1bd3a")))
+				return false;
 		}
-		return false;
+
+		currLevel = (currLevel+1)%36;
+		balls = new ArrayList<>();
+		blocks = new BlockXTree();
+		return true;
+
 	}
 
 	public boolean gameOver() {
@@ -71,7 +79,9 @@ public class Engine {
 		//initializes the base values for a new game
 		lives = BASELIVES;
 		points = 0;
-		balls = new ArrayList<Ball>();
+		balls = new ArrayList<>();
+		powerUps = new ArrayList<>();
+		shots = new ArrayList<>();
 		currLevel = 0;
 		blocks = new BlockXTree();
 		points = 0;
@@ -81,9 +91,14 @@ public class Engine {
 		//Moves all the Objects one turn checking for collisions
 		if(isPaused() || frameTimeDiffMod > 10)
 			return;
-		
-		movePad(aPressed,dPressed,frameTimeDiffMod);
 
+		movePad(aPressed,dPressed,frameTimeDiffMod);
+		
+		movePowerUps(frameTimeDiffMod);
+		handlePowerUpCollision();
+		
+		moveShots(frameTimeDiffMod);
+		handleShotCollision();
 		//Ball movement
 		Iterator<Ball> it = balls.iterator();
 		while(it.hasNext()) {
@@ -97,38 +112,129 @@ public class Engine {
 				handleBallBorderCollision(it, b, tmp,collisionSide);
 			}
 			if( areColliding(pad, tmp))  //ball hit the pad
-				handleBallPadCollision(b, tmp);
-			else                        
+				handleBallPadCollision(it,b, tmp);
+			else
 				handleBallBlockCollisions(b,tmp);
 
 			b.getPosition().add(b.getDirection().multBy(ballSpeed));
 		}
 
 	}
-	
+
 	private void movePad(boolean aPressed, boolean dPressed, double frameTimeDiff) {
 		//moves the Pad and checks for collisions with the window Border
 		double padSpeed = BASESPEED*2*frameTimeDiff;
 		if(aPressed && dPressed) {}
 		else if(aPressed && ((pad.getPosition().getX()-padSpeed) > 0))                                //if the new pos is within the canvas
-			pad.setPosition(pad.getPosition().getX()-padSpeed,  pad.getPosition().getY()); 
+			pad.setPosition(pad.getPosition().getX()-padSpeed,  pad.getPosition().getY());
 		else if(dPressed && ((pad.getPosition().getX()+pad.getWidth()+padSpeed) < FIELDWIDTH))
 			pad.setPosition(pad.getPosition().getX()+padSpeed,  pad.getPosition().getY());
 	}
-	
+	private void movePowerUps(double frameTimeDiffMod) {
+		for(PowerUp p : powerUps) {
+			p.setPosition(p.getPosition().getX(),p.getPosition().getY()+(BASESPEED/1.5)*frameTimeDiffMod);
+		}
+	}
+	private void moveShots(double frameTimeDiffMod) {
+		for(Projectile p: shots) {
+			p.setPosition(p.getPosition().getX(), p.getPosition().getY()-BASESPEED*frameTimeDiffMod);
+		}
+	}
+ 
+	private void handleShotCollision() {
+		Iterator<Projectile> it = shots.iterator();
+		while(it.hasNext()) {
+			Projectile p = it.next();
+			if(p.getPosition().getY() < 0)
+				it.remove();
+			else {
+			ArrayList<Block> hitBlocks = blocks.findColliding(p);
+			for(Block b : hitBlocks) {
+				b.getHitBy(p);
+				if(b.getHitpoints() <= 0) {
+					points = points+b.getPoints();
+					blocks.delete(b);
+				}
+			}
+			if(!hitBlocks.isEmpty())
+				it.remove();
+			}
+				
+		}
+	}
+	private void handlePowerUpCollision() {
+		Iterator<PowerUp> it = powerUps.iterator();
+		
+		while(it.hasNext()) {
+			PowerUp p = it.next();
+			if(areColliding(pad,p)) {
+				switch(p.getPowerUpType()) {
+				case TRIPLE:{
+					ArrayList<Ball> newBalls = new ArrayList<>(); 
+					for(Ball ball : balls) {
+						Ball extraBall = new Ball(ball);
+						extraBall.getDirection().rotate(Math.PI/6);
+						newBalls.add(new Ball(extraBall));
+						extraBall = new Ball(ball);
+						extraBall.getDirection().rotate(-Math.PI/6);
+						newBalls.add(new Ball(extraBall));
+					}
+					balls.addAll(newBalls);
+					break;
+				}
+				case SIZEUP:{
+					pad.setWidth((FIELDWIDTH/11)*2);
+					break;
+				}
+				case LAZERS:{
+					pad.setLaser();
+					break;
+				}
+				case SIZEDOWN:{
+					pad.setWidth((FIELDWIDTH/11)*0.5);
+					break;
+				}
+				case SPEEDDWN:{
+					for(Ball b : balls)
+						b.setSpeedMult(b.getSpeedMult()*0.5);
+					break;
+				}
+				case STICKY:{
+					pad.setSticky();
+					break;
+				}
+				case PLAYER:{
+					lives++;
+					break;
+				}
+				case BREAK:{
+					blocks = new BlockXTree();
+					break;
+				}
+				}
+				it.remove();
+			}
+			else if(p.getPosition().getY() > FIELDHEIGHT)
+				it.remove();
+		}
+	}
 	private void handleBallBorderCollision(Iterator<Ball> it,Ball b,Ball tmp,Side side) {
-		if(side == Side.BOTTOM) { // ball dropped off the play area
+		if((side == Side.BOTTOM) ) { // last ball dropped off the play area
+			if((!pad.hasBall()) && (balls.size() == 1)) {
+				lives--;
+				pad.reset();
+				pad.setPosition(FIELDWIDTH/2-pad.getWidth()/2,pad.getPosition().getY());
+				if(lives > 0)
+					pad.addBall(new Ball());
+			}
 			it.remove();
-			this.lives--;
-			if(lives > 0)
-				pad.addBall(new Ball());
 		}
 		else if(side == Side.TOP)                  //ball hit the top
 			b.reflectBorder(Side.TOP);
 		else                			//ball hit a wall
 			b.reflectBorder(side);
 	}
-	private void handleBallPadCollision(Ball b, Ball tmp) {
+	private void handleBallPadCollision(Iterator it,Ball b, Ball tmp) {
 		Side collisionSide = getCollisionSide(pad,tmp);
 		if(collisionSide == Side.TOP) {
 			double dist = getDistFromCenter(pad,tmp);
@@ -145,7 +251,7 @@ public class Engine {
 			if(b.getSpeedMult() < MAXSPEED)
 				b.setSpeedMult(b.getSpeedMult()+0.025);
 		}
-		else if(collisionSide == Side.LEFT){ 
+		else if(collisionSide == Side.LEFT){
 			b.setDirection(0, -1);
 			b.getDirection().rotate(-Math.PI/3);
 
@@ -154,12 +260,16 @@ public class Engine {
 			b.setDirection(0, -1);
 			b.getDirection().rotate(Math.PI/3);
 		}
+		if(pad.isSticky()) {
+			pad.stick(b);
+			it.remove();
+		}
 	}
 	private void handleBallBlockCollisions(Ball b, Ball tmp) { //improve this logic
 		ArrayList<Block> collidingBlocks = blocks.findColliding(tmp);
 		if(collidingBlocks.isEmpty())
 			return; //no collision, nothing to do
-		
+
 		if(collidingBlocks.size() > 1) {
 			Block block = collidingBlocks.get(0);
 			Block block2 = collidingBlocks.get(1);
@@ -167,14 +277,15 @@ public class Engine {
 			Side collisionSide2 = getCollisionSide(block2,tmp);
 			if(collisionSide1 == null && collisionSide2 == null) //invalid collision
 				return;
-			
+
 			if(collisionSide1 == collisionSide2) { // if two blocks of the same orientation are hit
-				if(areColliding(block,tmp) || areColliding(block2,tmp)) { 
+				if(areColliding(block,tmp) || areColliding(block2,tmp)) {
 					b.reflectSprite(collisionSide1);
 					block.getHitBy(b);
 					if(block.getHitpoints() == 0) {
 						points += block.getPoints();
 						blocks.delete(block);
+						spawnPowerUp(block);
 					}
 				}
 			}
@@ -193,11 +304,13 @@ public class Engine {
 					if(block.getHitpoints() == 0) {
 						points += block.getPoints();
 						blocks.delete(block);
+						spawnPowerUp(block);
 					}
 					block2.getHitBy(b);
 					if(block2.getHitpoints() == 0) {
 						points += block2.getPoints();
 						blocks.delete(block2);
+						spawnPowerUp(block);
 					}
 				}
 			}
@@ -206,7 +319,7 @@ public class Engine {
 			Block block = collidingBlocks.get(0);
 			if(areColliding(block, tmp)) {				// then apply an accurate collision detection
 				Side collisionSide = getCollisionSide(block,tmp);
-				if (collisionSide == null)//the side detection of tmp didn~t lead to a viable result
+				if (collisionSide == null)//the side detection of tmp didn#t lead to a viable result
 					collisionSide = getCollisionSide(block,b);
 				if (collisionSide == null)
 					return;
@@ -215,6 +328,7 @@ public class Engine {
 				if(block.getHitpoints() == 0) {
 					points += block.getPoints();
 					blocks.delete(block);
+					spawnPowerUp(block);
 				}
 			}
 		}
@@ -231,7 +345,7 @@ public class Engine {
 		else //side == left
 			ball.setPosition(sprite.getPosition().getX()-ball.getWidth()-1,  ball.getPosition().getY());
 	}
-	
+
 	private double getDistFromCenter(Pad pad, Ball ball) {
 		//finds the distance between the balls center and the center of the Pad
 		double padCenterX = pad.getPosition().getX()+pad.getWidth()/2;
@@ -239,9 +353,9 @@ public class Engine {
 		return ballCenterX - padCenterX;
 	}
 	private boolean isCollidingWithBorder(Sprite sprite) {
-		return ((sprite.getPosition().getX() < 0) || ((sprite.getPosition().getX()+sprite.getWidth()) > FIELDWIDTH) || 
-				(sprite.getPosition().getY() < 0) || ((sprite.getPosition().getY()+sprite.getHeight()) > FIELDHEIGHT));		
-	} 
+		return ((sprite.getPosition().getX() < 0) || ((sprite.getPosition().getX()+sprite.getWidth()) > FIELDWIDTH) ||
+				(sprite.getPosition().getY() < 0) || ((sprite.getPosition().getY()+sprite.getHeight()) > FIELDHEIGHT));
+	}
 	private boolean areColliding(Pad pad, Ball ball) {
 		return areColliding(pad.getPosition(),pad.getSize(),ball);
 	}
@@ -272,37 +386,55 @@ public class Engine {
 		double cornerDistance = Math.pow(middleDistX - rectSize.getX()/2,2) + Math.pow(middleDistY - rectSize.getY(),2);
 		return (cornerDistance <= Math.pow(ball.getWidth()/2,2));// lightly inacurate, to improve gameplay
 	}
+	private boolean areColliding(Pad pad, PowerUp powerUp) {
+		double padX = pad.getPosition().getX();
+		double padY = pad.getPosition().getY();
+		double powX = powerUp.getPosition().getX();
+		double powY = powerUp.getPosition().getY();
+		if((padX > (powX+powerUp.getWidth())) || ((padX+pad.getWidth()) < powX) ||
+			(padY > (powY+powerUp.getHeight()) || (padY+pad.getHeight() < powY)))
+			return false;
+		return true;
+	}
 
 	public String loadNextLevel() {
 		return loadLevel(System.getProperty("user.dir")+"/level/stage"+currLevel+".txt");
 	}
 	public String loadLevel(String filename) {   //todo make this more robust
 		//reads a new level file into the Blocktree and returns the path to the BackgroundImage
-		Block[][] field = new Block[15][11];
+		Block[][] field = new Block[16][11];
 		double blockWidth = FIELDWIDTH/11;
-		double blockHeight = (FIELDHEIGHT*0.66)/15;
+		double blockHeight = (FIELDHEIGHT*0.66)/16;
 		String backgroundImagePath = "/level/backgrounds/bg.png";
+		int topPadding = 3;
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(filename)));
 			int lineCounter = 0;
 			String line;
-			
+
 			String[] args;
-			
+
 			while((line = br.readLine()) != null) {
-				if(line.startsWith("bg"))
+				if(line.startsWith("bg")) {
+					try {
 					backgroundImagePath = line.split("=")[1];
-					
-				if(line.startsWith("(")) { 
+					}catch(IndexOutOfBoundsException e) {}
+				}
+				if(line.startsWith("topPadding")) {
+					try {
+					topPadding = Integer.parseInt(line.replace(" ", "").split("=")[1]);
+					}catch(IndexOutOfBoundsException e) {}
+				}
+				if(line.startsWith("(")) {
 					Alignment align = Alignment.CENTER;
 					Color color = Color.HOTPINK;
-					line = line.replace("(", "").replace(")", "").strip();
+					line = line.replace("(", "").replace(")", "").replace(" ","");
 					args = line.split(",");
 					int nrOfBlocks = 11;
 					try {
 						color = parseColor(args[0]);
 					}catch(IndexOutOfBoundsException e) {}//if no color is specified assume a hotpink color
-					try {                                         
+					try {
 						nrOfBlocks = Integer.parseInt(args[1]);
 					}
 					catch(IndexOutOfBoundsException e) {}//if no parameter is given assume a full line
@@ -317,28 +449,28 @@ public class Engine {
 					for(int i : new int[] {5,4,6,3,7,2,8,1,9,0,10}) {//add the Blocks centered
 						if(nrOfBlocks == 0)
 							continue;
-						field[lineCounter][i] = new Block(i*blockWidth,lineCounter*blockHeight,blockWidth,blockHeight,color,currLevel);
+						field[lineCounter][i] = new Block(i*blockWidth,(lineCounter+topPadding)*blockHeight,blockWidth,blockHeight,color,currLevel);
 						nrOfBlocks--;
 					}
 					}
 					else if (align == Alignment.LEFT) {
-						for(int i = 0;i<nrOfBlocks;i++) 
-							field[lineCounter][i] = new Block(i*blockWidth,lineCounter*blockHeight,blockWidth,blockHeight,color,currLevel);
+						for(int i = 0;i<nrOfBlocks;i++)
+							field[lineCounter][i] = new Block(i*blockWidth,(lineCounter+topPadding)*blockHeight,blockWidth,blockHeight,color,currLevel);
 					}
 					else {
-						for(int i = 11-nrOfBlocks;i<11;i++) 
-							field[lineCounter][i] = new Block(i*blockWidth,lineCounter*blockHeight,blockWidth,blockHeight,color,currLevel);
+						for(int i = 11-nrOfBlocks;i<11;i++)
+							field[lineCounter][i] = new Block(i*blockWidth,(lineCounter+topPadding)*blockHeight,blockWidth,blockHeight,color,currLevel);
 					}
 					lineCounter++;
 				}
 				else if(line.startsWith("{")) {
-					line = line.replace("{", "").replace("}", "").strip();
+					line = line.replace("{", "").replace("}", "").replace(" ", "");
 					args = line.split(",");
 					for(int i=0;i<11;i++) {
 						try {
-							if(args[i].equals("")) //no parameters given defaults to draw an empty line
+							if(args[i].equals("")) //no parameters given defaults to no block drawn
 								continue;
-							field[lineCounter][i] = new Block(i*blockWidth,lineCounter*blockHeight,blockWidth,blockHeight,parseColor(args[i]),currLevel);
+							field[lineCounter][i] = new Block(i*blockWidth,(lineCounter+topPadding)*blockHeight,blockWidth,blockHeight,parseColor(args[i]),currLevel);
 						}catch(IndexOutOfBoundsException e) {}//don't add a Block if the field is empty
 					}
 					lineCounter++;
@@ -348,9 +480,9 @@ public class Engine {
 		}catch(IOException e) {
 			System.out.println(e.getMessage());
 		}
-		
+
 		//add the Blocks in a BST friendly manor to the BlockTree
-		for(int i : new int[] {7,3,11,1,5,9,13,0,2,4,6,8,10,12,14}) {
+		for(int i : new int[] {8,3,12,1,5,10,14,0,2,4,6,9,11,13,15,7}) {
 			if(field[i] == null)
 				continue;
 			for(int j : new int[] {5,2,8,1,4,6,9,0,3,7,10}) {
@@ -358,11 +490,11 @@ public class Engine {
 					blocks.insert(field[i][j]);
 			}
 		}
-		
+
 		//init a pad at the middle of the canvas, 10% above the bottom
-		pad = new Pad(FIELDWIDTH/2-blockWidth*1.33/2,FIELDHEIGHT*0.9,blockWidth*1.33,blockHeight*0.66);
+		pad = new Pad(FIELDWIDTH/2-blockWidth*1.33/2,FIELDHEIGHT*0.95,blockWidth*1.33,blockHeight*0.66);
 		pad.addBall(new Ball());
-		
+
 		return backgroundImagePath;
 	}
 
@@ -384,26 +516,68 @@ public class Engine {
 		double ballCenterY = s.getPosition().getY()+s.getHeight()/2;
 		double min = Math.abs(rectPos.getY() - ballCenterY); // topBorderDist
 		Side side = Side.TOP;
-		
+
 		double bottomBorderDist = Math.abs((rectPos.getY()+rectSize.getY()) - ballCenterY);
 		if( bottomBorderDist < min) {
 			min = bottomBorderDist;
 			side = Side.BOTTOM;
 		}
-		
+
 		double leftBorderDist = Math.abs(rectPos.getX() - ballCenterX);
 		if( leftBorderDist < min ) {
 			min = leftBorderDist;
 			side = Side.LEFT;
 		}
-		
+
 		double rightBorderDist = Math.abs((rectPos.getX()+rectSize.getX()) - ballCenterX);
 		if( rightBorderDist < min)
 			side = Side.RIGHT;
-		
+
 		return side;
 	}
 
+	private void spawnPowerUp(Block block) {
+		//adds a power up after a block has been destroyed with POWERUPCHANCE of happening
+		if((rand.nextDouble() < POWERUPCHANCE) && (!block.getColor().equals(Color.web("bdbdbd")))) { //silver blocks may not spawn power ups
+			double blockXMid = block.getPosition().getX()+block.getWidth()/2;
+			double blockYMid = block.getPosition().getY()+block.getHeight()/2;
+			PowerUpType type = null;
+			switch(rand.nextInt(7)) {
+			case 0:{
+				if(rand.nextInt(0,100) == 0)
+					type = PowerUpType.BREAK;
+				else
+					type = PowerUpType.TRIPLE;
+				break;
+			}
+			case 1:{
+				type = PowerUpType.LAZERS;
+				break;
+			}
+			case 2:{
+				type = PowerUpType.PLAYER;
+				break;
+			}
+			case 3:{
+				type = PowerUpType.SIZEDOWN;
+				break;
+			}
+			case 4:{
+				type = PowerUpType.SIZEUP;
+				break;
+			}
+			case 5:{
+				type = PowerUpType.SPEEDDWN;
+				break;
+			}
+			case 6:{
+				type = PowerUpType.STICKY;
+				break;
+			}
+			}
+			powerUps.add(new PowerUp(blockXMid,blockYMid,block.getWidth()*0.6,block.getHeight(),type));
+		}
+	}
 	private Color parseColor(String color) {
 		switch(color) {
 		case "white":
@@ -448,12 +622,24 @@ public class Engine {
 	public Pad getPad() {
 		return pad;
 	}
+	public ArrayList<Projectile> getShots(){
+		return shots;
+	}
+	public ArrayList<PowerUp> getPowerUps(){
+		return powerUps;
+	}
 	public ArrayList<Ball> getBalls(){
 		return balls;
 	}
 	public void fireBall() {
 		if(pad.hasBall()) {
 			balls.add(pad.getOneBall());
+		}
+	}
+	public void fireLaser() {
+		if(shots.size() < 6) {
+			shots.add(new Projectile(pad.getPosition().getX()-2,pad.getPosition().getY(),3,pad.getHeight()));
+			shots.add(new Projectile(pad.getPosition().getX()+pad.getWidth()-6,pad.getPosition().getY(),3,pad.getHeight()));
 		}
 	}
 }

@@ -1,7 +1,10 @@
 package openArcanoid;
 
+import java.util.Random;
+
 public class Vector2D {
 	private double[] vect;
+	Random rand = new Random();
 
 	public Vector2D() {
 		vect = new double[]{0,0};
@@ -33,7 +36,7 @@ public class Vector2D {
 	public void mirror(Side axis) {
 		// Mirrors the vector along the horizontal or vertical axis.
 		if ((axis == Side.LEFT) || (axis == Side.RIGHT)) {
-			vect[0] = -vect[0];
+			vect[0] = -vect[0]+rand.nextDouble()*0.0001;//add a minute randomness to stop reflection loops
 		} else {
 			vect[1] = -vect[1];
 		}

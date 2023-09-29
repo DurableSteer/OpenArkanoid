@@ -1,0 +1,16 @@
+title=Round 5
+bg=/level/backgrounds/bg1.png
+{,,,yellow,,,,yellow,,,}
+{,,,,yellow,,yellow,,,,}
+{,,,,yellow,,yellow,,,,}
+{,,,silver,silver,silver,silver,silver,,,}
+{,,,silver,silver,silver,silver,silver,,,}
+{,,silver,silver,red,silver,red,silver,silver,,}
+{,,silver,silver,red,silver,red,silver,silver,,}
+{,silver,silver,silver,silver,silver,silver,silver,silver,silver,}
+{,silver,silver,silver,silver,silver,silver,silver,silver,silver,}
+{,silver,,silver,silver,silver,silver,silver,,silver,}
+{,silver,,silver,,,,silver,,silver,}
+{,silver,,silver,,,,silver,,silver,}
+{,,,,silver,,silver,,,,}
+{,,,,silver,,silver,,,,}

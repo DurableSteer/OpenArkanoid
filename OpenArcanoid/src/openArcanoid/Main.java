@@ -32,9 +32,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 public class Main extends Application {
 	private static volatile boolean aPressed = false;
@@ -53,20 +51,19 @@ public class Main extends Application {
 	public void start(Stage primaryStage) throws Exception {
 		primaryStage.setTitle("OpenArkanoid");
 		primaryStage.setOnCloseRequest(event -> loop.stop());
-		primaryStage.initStyle(StageStyle.DECORATED);
 		primaryStage.setResizable(false);
 		primaryStage.fullScreenProperty().addListener(new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> prop, Boolean wasIconified, Boolean isIconified) {
             }
         });
-		drawMenu(primaryStage);
 		loop = new AnimationTimer() {
 			private long lastCallTime = 0;
+			private long lastDrawTime = 0;
 			@Override
 			public void handle(long now) {
 					engine.next(aPressed, dPressed, ((double)(now-lastCallTime))/3000000);
-					if(engine.gameOver()) 
+					if(engine.gameOver())
 						drawGameOver(primaryStage, canvas.getGraphicsContext2D());
 					else if (engine.levelCleared()) {
 						drawStageCleared(primaryStage,canvas.getGraphicsContext2D());
@@ -75,11 +72,15 @@ public class Main extends Application {
 						loop.stop();
 						drawMenu(primaryStage);
 					}
-					else
+					else if(now-lastDrawTime > 15384615 ) { //redraw only at ca 65hz to save recources(javafx is capped at 60fps anyways)
 						drawStage(primaryStage);
+						lastDrawTime = now;
+					}
+						
 				lastCallTime = now;
 			}
 		};
+		drawMenu(primaryStage);
 	}
 	public void drawMenu(Stage primaryStage) {
 		StackPane root  = new StackPane();
@@ -141,7 +142,7 @@ public class Main extends Application {
 				quit.setScaleY(1);
 			}
 		});
-		
+
 		if(engine.isPaused()) {
 			Label continueGame = new Label("continue");
 			continueGame.setFont(new Font(FONTTYPE,FONTSIZE));
@@ -194,14 +195,14 @@ public class Main extends Application {
 			});
 			MenuBox.getChildren().add(settings);
 		}
-			
+
 		MenuBox.getChildren().add(quit);
 		MenuBox.setMaxSize(RENDERWIDTH*windowWidthMod*0.8, RENDERHEIGHT*windowHeightMod*0.9);
 		root.getChildren().add(MenuBox);
 		primaryStage.setScene(scene);
 		primaryStage.show();
 	}
-	
+
 	public void drawSettings(Stage primaryStage) {
 		StackPane root  = new StackPane();
 		root.setAlignment(Pos.CENTER);
@@ -248,7 +249,7 @@ public class Main extends Application {
 		primaryStage.setScene(scene);
 		primaryStage.show();
 	}
-	
+
 	public void drawStage(Stage primaryStage) {
 		StackPane root  = new StackPane();
 		root.setBackground(new Background(background));
@@ -270,6 +271,8 @@ public class Main extends Application {
 				}
 				case SPACE:{
 					engine.fireBall();
+					if(engine.getPad().isLaser())
+						engine.fireLaser();
 					break;
 				}
 				case ESCAPE:{
@@ -297,6 +300,7 @@ public class Main extends Application {
 			});
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+		drawPowerUps(gc);
 		drawMovables(gc);
 		drawBlocks(gc);
 		root.getChildren().add(canvas);
@@ -318,6 +322,17 @@ public class Main extends Application {
 				gc.strokeRect(xPos+width*0.02, yPos+height*0.05, width*0.96, height*0.9);
 		}
 	}
+	private void drawPowerUps(GraphicsContext gc) {
+		for(PowerUp p : engine.getPowerUps()) {
+			double xPos = p.getPosition().getX()*windowWidthMod;
+			double yPos = p.getPosition().getY()*windowHeightMod;
+			double width = p.getWidth()*windowWidthMod;
+			double height = p.getHeight()*windowHeightMod;
+			gc.setFill(p.getColor());
+			gc.fillRoundRect(xPos, yPos, width, height, 10, 10);
+			
+		}
+	}
 	private void drawMovables(GraphicsContext gc) {
 		MotionBlur mb = new MotionBlur();
 		mb.setRadius(4);
@@ -333,15 +348,16 @@ public class Main extends Application {
 		}
 		gc.applyEffect(mb);
 		if(engine.getPad().hasBall()) {
-			Ball b = engine.getPad().getBall();
-			double xPos = b.getPosition().getX()*windowWidthMod;
-			double yPos = b.getPosition().getY()*windowHeightMod;
-			double width = b.getWidth()*windowWidthMod;
-			double height = b.getHeight()*windowHeightMod;
-			gc.setFill(b.getColor());
-			gc.fillOval(xPos, yPos, width+1, height);//warum +1?
-			gc.setStroke(Color.WHITE);
-			gc.strokeOval(xPos, yPos, width, height);
+			for(Ball b : engine.getPad().getBalls()) {
+				double xPos = b.getPosition().getX()*windowWidthMod;
+				double yPos = b.getPosition().getY()*windowHeightMod;
+				double width = b.getWidth()*windowWidthMod;
+				double height = b.getHeight()*windowHeightMod;
+				gc.setFill(b.getColor());
+				gc.fillOval(xPos, yPos, width+1, height);//warum +1?
+				gc.setStroke(Color.WHITE);
+				gc.strokeOval(xPos, yPos, width, height);
+			}
 		}
 		Pad p = engine.getPad();
 		double xPos = p.getPosition().getX()*windowWidthMod;
@@ -349,14 +365,42 @@ public class Main extends Application {
 		double width = p.getWidth()*windowWidthMod;
 		double height = p.getHeight()*windowHeightMod;
 		gc.setFill(p.getColor());
-		gc.fillRect(xPos, yPos, width, height);
-		gc.setStroke(Color.WHITE);
-		gc.strokeRect(xPos, yPos, width, height);
-		gc.setFill(Color.web("d82800"));
-		gc.fillRoundRect(xPos-2,yPos-1,width*0.17,height+2,10,10);
-		gc.strokeRoundRect(xPos-2,yPos-1,width*0.17,height+2,10,10);
-		gc.fillRoundRect(xPos+width*0.83+2,yPos-1,width*0.17,height+2,10,10);
-		gc.strokeRoundRect(xPos+width*0.83+2,yPos-1,width*0.17,height+2,10,10);
+		if(engine.getPad().isLaser()) {
+			gc.fillRect(xPos, yPos, width, height);
+			gc.setFill(Color.CYAN);
+			gc.fillRect(xPos+2, yPos, width*0.05, height);
+			gc.fillRect(xPos+width-6, yPos, width*0.05, height);
+			gc.setStroke(Color.WHITE);
+			gc.strokeRect(xPos-1, yPos, width+2, height);
+			gc.setStroke(Color.ORANGE);
+			gc.strokeLine(xPos, yPos+height, xPos+width,yPos+height);
+			gc.setFill(p.getColor());
+			gc.fillPolygon(new double[]{xPos-2,xPos-2,xPos-2-width*0.14,xPos-2-width*0.18}, new double[]{yPos-1,yPos+2+height,yPos+height+1,yPos+height*0.7}, 4);
+			gc.fillPolygon(new double[]{xPos+width+2,xPos+width+2,xPos+width+2+width*0.14,xPos+width+2+width*0.18}, new double[]{yPos-1,yPos+2+height,yPos+height+1,yPos+height*0.7}, 4);
+			gc.setStroke(Color.ORANGERED);
+			gc.strokePolygon(new double[]{xPos-2,xPos-2,xPos-2-width*0.14,xPos-2-width*0.18}, new double[]{yPos-1,yPos+2+height,yPos+height+1,yPos+height*0.7}, 4);
+			gc.strokePolygon(new double[]{xPos+width+2,xPos+width+2,xPos+width+2+width*0.14,xPos+width+2+width*0.18}, new double[]{yPos-1,yPos+2+height,yPos+height+1,yPos+height*0.7},4);
+			
+		}
+		else {
+			gc.fillRect(xPos, yPos, width, height);
+			gc.setStroke(Color.WHITE);
+			gc.strokeRect(xPos, yPos, width, height);
+			gc.setFill(Color.web("d82800"));
+			gc.fillRoundRect(xPos-2,yPos-1,width*0.17,height+2,10,10);
+			gc.strokeRoundRect(xPos-2,yPos-1,width*0.17,height+2,10,10);
+			gc.fillRoundRect(xPos+width*0.83+2,yPos-1,width*0.17,height+2,10,10);
+			gc.strokeRoundRect(xPos+width*0.83+2,yPos-1,width*0.17,height+2,10,10);
+			
+		}
+		for(Projectile shot : engine.getShots()) {
+			xPos = shot.getPosition().getX()*windowWidthMod;
+			yPos = shot.getPosition().getY()*windowHeightMod;
+			width = shot.getWidth()*windowWidthMod;
+			height = shot.getHeight()*windowHeightMod;
+			gc.setFill(shot.getColor());
+			gc.fillRect(xPos, yPos, width, height);
+		}
 	}
 	private void drawGameOver(Stage primaryStage,GraphicsContext gc) {
 		loop.stop();
@@ -374,7 +418,7 @@ public class Main extends Application {
 				drawMenu(primaryStage);
 			}
 		});
-		
+
 	}
 	private void drawStageCleared(Stage primaryStage,GraphicsContext gc) {
 		loop.stop();
@@ -405,7 +449,7 @@ public class Main extends Application {
 		gc.fillRoundRect(borderCanvas.getWidth()-10, 2, 8, borderCanvas.getHeight(), 7, 7);
 		gc.fillRoundRect(2, 2, borderCanvas.getWidth()-4, 8, 7, 7);
 		//gc.fillRoundRect(2, borderCanvas.getHeight()-10, borderCanvas.getWidth()-4, 8, 7, 7);
-		
+
 		for(int i=0;i < ((borderCanvas.getWidth())/100);i++) {
 			drawVent(gc,35+i*100,0,true);
 			//drawVent(gc,35+i*100,borderCanvas.getHeight()-12,true);
@@ -414,7 +458,7 @@ public class Main extends Application {
 			drawVent(gc,0,35+i*100,false);
 			drawVent(gc,borderCanvas.getWidth()-12,35+i*100,false);
 		}
-			
+
 	}
 	private void drawVent(GraphicsContext gc, double x, double y, boolean horizontal) {
 		gc.setFill(Color.web("#bdbdbb"));

@@ -1,0 +1,15 @@
+title=Round 23
+bg=/level/backgrounds/bg3.png
+(blue)
+{}
+{silver,silver,silver,,silver,silver,silver,,silver,silver,silver}
+{silver,green,silver,,silver,green,silver,,silver,green,silver}
+{silver,silver,silver,,silver,silver,silver,,silver,silver,silver}
+{}
+{,,silver,silver,silver,,silver,silver,silver}
+{,,silver,red,silver,,silver,red,silver}
+{,,silver,silver,silver,,silver,silver,silver}
+{}
+{silver,silver,silver,,silver,silver,silver,,silver,silver,silver}
+{silver,blue,silver,,silver,blue,silver,,silver,blue,silver}
+{silver,silver,silver,,silver,silver,silver,,silver,silver,silver}

@@ -1,0 +1,13 @@
+title=Round 8
+bg=/level/backgrounds/bg4.png
+{,gold,,,gold,,gold,,,gold,}
+{,gold,gold,,,,,,gold,gold,}
+(orange,1)
+{,,,,gold,green,gold,,,,,}
+{,,gold,,,yellow,,gold,,,}
+(blue,1)
+{,,gold,,,red,,gold,,,}
+{,,,,gold,green,gold,,,,,}
+(yellow,1)
+{,gold,gold,,,,,,gold,gold,}
+{,gold,,,gold,,gold,,,gold,}

@@ -47,7 +47,7 @@ public class Ball extends Sprite {
 		direction = new Vector2D(b.getDirection());
 		color = Color.web("fc9a35");
 	}
-	
+
 	private double getDirectionDifference(Side side) {
 		//returns the percentage difference between the current direction and the edge along a given side
 		if(side == Side.LEFT || side == Side.RIGHT)
@@ -58,7 +58,7 @@ public class Ball extends Sprite {
 	}
 
 	public void reflectBorder(Side side) {
-		//Changes the direction of the ball upon hitting the Border at side 
+		//Changes the direction of the ball upon hitting the Border at side
 		if(getDirectionDifference(side) < 0.1) {//set shallow reflections to a minimum angle
 			double MINREFLECTIONANGLE = Math.PI/5;
 			if(side == Side.LEFT) {
@@ -105,7 +105,7 @@ public class Ball extends Sprite {
 		else
 			direction.mirror(side);
 	}
-	
+
 	public void reflectSprite(Side side) {
 		//reflect the Ball off the Side of the hit rectangular Sprite
 		if(side == Side.LEFT)
@@ -117,7 +117,7 @@ public class Ball extends Sprite {
 		else
 			reflectBorder(Side.TOP);
 	}
-	
+
 	public int getDamage() {
 		return damage;
 	}

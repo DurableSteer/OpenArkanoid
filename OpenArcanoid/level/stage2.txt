@@ -1,5 +1,5 @@
-title=Round 1
-bg=/level/bg1.png
+title=Round 3
+bg=/level/backgrounds/bg3.png
 (green)
 {}
 {white,white,white,gold,gold,gold,gold,gold,gold,gold,gold}

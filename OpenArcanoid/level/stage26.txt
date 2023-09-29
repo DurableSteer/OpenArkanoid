@@ -1,0 +1,10 @@
+title=Round 27
+topPadding=7
+bg=/level/backgrounds/bg3.png
+(silver)
+(yellow)
+(silver)
+{}
+(silver)
+(red)
+(silver)

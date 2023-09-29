@@ -1,0 +1,17 @@
+title=Round 34
+bg=/level/backgrounds/bg2.png
+{,,,,,,lightblue,lightblue,lightblue}
+{,,,,,,lightblue,lightblue,pink}
+{,,,,,lightblue,lightblue,pink,pink,pink}
+{,,,,,lightblue,lightblue,lightblue,pink,blue}
+{,,,,,lightblue,lightblue,lightblue,lightblue,blue}
+{,,,,gold,lightblue,lightblue,lightblue,lightblue,blue}
+{,,,,orange,blue,lightblue,lightblue,blue,blue}
+{,,,,orange,orange,blue,blue,blue}
+{,,,gold,orange,gold,blue,blue,blue}
+{,,,orange,orange,orange,orange}
+{,,gold,orange,gold,orange}
+{,,orange,orange,orange,orange}
+{,,orange,orange,orange}
+{,orange,orange,orange}
+{,orange,orange}

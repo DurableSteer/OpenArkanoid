@@ -1,0 +1,11 @@
+title=Round 13
+topPadding=4
+bg=/level/backgrounds/bg1.png
+{,yellow,yellow,,white,white,white,,yellow,yellow}
+{,white,white,,yellow,yellow,yellow,,white,white}
+{,blue,blue,,red,red,red,,blue,blue}
+{,pink,pink,,green,green,green,,pink,pink}
+{,green,green,,pink,pink,pink,,green,green}
+{,red,red,,blue,blue,blue,,red,red}
+{,yellow,yellow,,white,white,white,,yellow,yellow}
+{,white,white,,yellow,yellow,yellow,,white,white}

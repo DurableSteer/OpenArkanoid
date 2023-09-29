@@ -1,0 +1,13 @@
+title=Round 21
+bg=/level/backgrounds/bg1.png
+{,gold,orange,orange,orange,orange,orange,orange,orange,gold}
+{,gold,,,,,,,,gold}
+{,gold,,gold,gold,gold,gold,gold,,gold}
+{,gold,,gold,blue,blue,blue,gold,,gold}
+{,gold,,gold,pink,pink,pink,gold,,gold}
+{,gold,,gold,green,green,green,gold,,gold}
+{,gold,,gold,orange,orange,orange,gold,,gold}
+{,gold,,gold,lightblue,lightblue,lightblue,gold,,gold}
+{,gold,,,,,,,,gold}
+{,gold,,,,,,,,gold}
+(gold,9)

@@ -1,0 +1,12 @@
+title=Round 11
+topPadding=4
+bg=/level/backgrounds/bg3.png
+(silver,9)
+{,silver,,,,,,,,silver}
+{,silver,,silver,silver,silver,silver,silver,,silver}
+{,silver,,silver,,,,silver,,silver}
+{,silver,,silver,,silver,,silver,,silver}
+{,silver,,silver,,,,silver,,silver}
+{,silver,,silver,silver,silver,silver,silver,,silver}
+{,silver,,,,,,,,silver}
+(silver,9)

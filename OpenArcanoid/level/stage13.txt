@@ -1,0 +1,17 @@
+title=Round 14
+topPadding=3
+bg=/level/backgrounds/bg2.png
+{red,silver,silver,silver,silver,silver,silver,silver,silver,silver,red}
+{gold,,,,,,,,,,gold}
+(blue)
+{}
+{orange,silver,silver,silver,silver,silver,silver,silver,silver,silver,orange}
+{gold,,,,,,,,,,gold}
+(blue)
+{}
+{blue,silver,silver,silver,silver,silver,silver,silver,silver,silver,blue}
+{gold,,,,,,,,,,gold}
+(red)
+{}
+(red)
+{gold,,,,,,,,,,gold}

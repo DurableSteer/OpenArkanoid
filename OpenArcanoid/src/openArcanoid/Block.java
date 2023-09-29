@@ -12,12 +12,12 @@ public class Block extends Sprite {
 	public Block(double xPosition, double yPosition, double xSize, double ySize, Color color,int roundNr) {
 		super(xPosition, yPosition, xSize, ySize);
 		this.color = color;
-		hp = parseHp(color);
+		hp = parseHp(color,roundNr);
 		points = parsePoints(color, roundNr);
 	}
-	private int parseHp(Color color) {
-		if(color.equals(color.web("bdbdbd")))//silver
-			return 2;
+	private int parseHp(Color color,int roundNr) {
+		if(color.equals(Color.web("bdbdbd")))//silver
+			return 2+(roundNr/8);
 		if(color.equals(Color.web("f1bd3a")))//gold
 			return 999;
 		return 1;
@@ -43,7 +43,7 @@ public class Block extends Sprite {
 			return 50*roundNr;
 		return 0;//gold or error
 	}
-	
+
 	public int getPoints() {
 		return points;
 	}

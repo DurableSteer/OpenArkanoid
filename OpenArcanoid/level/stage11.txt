@@ -1,0 +1,16 @@
+title=Round 12
+topPadding=2
+bg=/level/backgrounds/bg4.png
+(gold)
+{,,,,gold,,,,gold,orange,}
+{,gold,green,,gold,,,,gold}
+{,gold,,,gold,,gold,,gold}
+{,gold,,,gold,,gold,,gold}
+{,gold,,,gold,green,gold,,gold}
+{,gold,,orange,gold,,gold,blue,gold}
+{,gold,,,gold,red,gold,,gold}
+{,gold,,,gold,,gold,,gold}
+{,gold,,,gold,,gold,,gold}
+{,gold,lightblue,,gold,,gold}
+{,gold,,,,,gold,,,,,,orange}
+(gold,10,right)

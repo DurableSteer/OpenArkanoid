@@ -1,0 +1,13 @@
+title=Round 9
+bg=/level/backgrounds/bg1.png
+{,gold,,gold,,,,gold,,gold,}
+{,gold,green,gold,,,,gold,green,gold,}
+{,gold,blue,gold,,,,gold,blue,gold,}
+{,gold,gold,gold,,,,gold,gold,gold,}
+{}
+{,,,pink,blue,blue,blue,yellow}
+{,,,pink,green,lightblue,green,yellow}
+{,,,pink,lightblue,green,lightblue,yellow}
+{,,,pink,green,lightblue,green,yellow}
+{,,,pink,lightblue,green,lightblue,yellow}
+{,,,pink,blue,blue,blue,yellow}

@@ -1,0 +1,10 @@
+title=Round 26
+topPadding=4
+bg=/level/backgrounds/bg2.png
+{,,gold,silver,silver,gold}
+{,gold,,,,,gold}
+{gold,,,lightblue,lightblue,,,gold}
+{gold,,blue,blue,blue,blue,,gold}
+{gold,,,pink,pink,,,gold}
+{,gold,,,,,gold}
+{,,gold,gold,gold,gold}
