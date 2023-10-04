@@ -1,9 +1,6 @@
 package openArcanoid;
 
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
@@ -34,6 +31,7 @@ import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.text.Font;
@@ -98,8 +96,7 @@ public class Main extends Application {
 		root.setAlignment(Pos.CENTER);
 		Scene scene = new Scene(root, RENDERWIDTH*windowWidthMod, RENDERHEIGHT*windowHeightMod);
 		root.setBackground(new Background(new BackgroundFill(Color.BLACK,CornerRadii.EMPTY,Insets.EMPTY)));
-		GridPane menuGrid = new GridPane(2,4);
-
+		GridPane menuGrid = new GridPane();
 		menuGrid.getColumnConstraints().add(new ColumnConstraints(30));
 		ColumnConstraints menuColConst = new ColumnConstraints();
 		menuColConst.setHalignment(HPos.CENTER);
@@ -107,7 +104,7 @@ public class Main extends Application {
 		for(int i=0;i<4;i++)
 			menuGrid.getRowConstraints().add(new RowConstraints(35));
 		menuGrid.setAlignment(Pos.BASELINE_CENTER);
-		LinearGradient gradient = new LinearGradient(0, 0, 0, 1, true, javafx.scene.paint.CycleMethod.NO_CYCLE,new Stop[] {new Stop(0,Color.web("#27198b")), new Stop(0.5,Color.web("#a66fd7")), new Stop(1,Color.WHITE)});
+		LinearGradient gradient = new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE,new Stop[] {new Stop(0,Color.web("#27198b")), new Stop(0.5,Color.web("#a66fd7")), new Stop(1,Color.WHITE)});
 		Label title = new Label("OpenArkanoid");
 		title.setTextFill(gradient);
 		title.setFont(Font.loadFont(FONTPATH, FONTSIZE+15));
@@ -277,6 +274,7 @@ public class Main extends Application {
 
 	public void drawStage(Stage primaryStage) {
 		StackPane root  = new StackPane();
+		Canvas nextFrame = new Canvas(RENDERWIDTH*windowWidthMod,RENDERHEIGHT*windowHeightMod);
 		root.setBackground(new Background(background));
 		Scene scene = new Scene(root, RENDERWIDTH*windowWidthMod+24, RENDERHEIGHT*windowHeightMod+22);
 		Canvas borderCanvas = new Canvas(RENDERWIDTH*windowWidthMod+24,RENDERHEIGHT*windowHeightMod+22);
@@ -323,11 +321,11 @@ public class Main extends Application {
 				}
 			}
 			});
-		GraphicsContext gc = canvas.getGraphicsContext2D();
-		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+		GraphicsContext gc = nextFrame.getGraphicsContext2D();
 		drawPowerUps(gc);
 		drawMovables(gc);
 		drawBlocks(gc);
+		canvas = nextFrame;
 		root.getChildren().add(canvas);
 
 		primaryStage.setScene(scene);
@@ -478,8 +476,8 @@ public class Main extends Application {
 				canvas.getScene().removeEventFilter(KeyEvent.KEY_PRESSED, this);
 				String bgPath = engine.loadNextLevel();
 				try {
-					background = new BackgroundImage(new Image(new FileInputStream(System.getProperty("user.dir")+bgPath)),BackgroundRepeat.REPEAT,BackgroundRepeat.REPEAT,BackgroundPosition.CENTER,new BackgroundSize(1024,1024,false,false,true,false));
-				} catch (FileNotFoundException e1) {
+					background = new BackgroundImage(new Image(getClass().getResourceAsStream(bgPath)),BackgroundRepeat.REPEAT,BackgroundRepeat.REPEAT,BackgroundPosition.CENTER,new BackgroundSize(1024,1024,false,false,true,false));
+				} catch (Exception e1) {
 					System.out.println(e1.getMessage());
 				}
 				loop.start();

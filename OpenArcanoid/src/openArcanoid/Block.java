@@ -6,9 +6,6 @@ public class Block extends Sprite {
 	private int hp;
 	private int points;
 
-	private final int BASEHP = 1;
-
-
 	public Block(double xPosition, double yPosition, double xSize, double ySize, Color color,int roundNr) {
 		super(xPosition, yPosition, xSize, ySize);
 		this.color = color;
