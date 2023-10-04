@@ -1,0 +1,16 @@
+title=Round 4
+bg=/main/resources/backgrounds/bg4.png
+{,silver,yellow,green,pink,,yellow,green,blue,silver,}
+{,blue,green,yellow,red,,green,yellow,silver,blue,}
+{,green,pink,red,yellow,,blue,silver,yellow,green,}
+{,yellow,red,pink,green,,silver,blue,green,yellow,}
+{,red,yellow,green,blue,,yellow,green,pink,red,}
+{,pink,green,yellow,silver,,green,yellow,red,pink,}
+{,green,blue,silver,yellow,,pink,red,yellow,green,}
+{,yellow,silver,blue,green,,red,pink,green,yellow,}
+{,silver,yellow,green,pink,,yellow,green,blue,silver,}
+{,blue,green,yellow,red,,green,yellow,silver,blue,}
+{,green,pink,red,yellow,,blue,silver,yellow,green,}
+{,yellow,red,pink,green,,silver,blue,green,yellow,}
+{,red,yellow,green,blue,,yellow,green,pink,red,}
+{,pink,green,yellow,silver,,green,yellow,red,pink,}

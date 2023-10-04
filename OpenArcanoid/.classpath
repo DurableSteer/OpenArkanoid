@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry including="**/*.java" kind="src" output="target/classes" path="src">
-		<attributes>
-			<attribute name="module" value="true"/>
-			<attribute name="add-exports" value="OpenArcanoid/openArcanoid=OpenArcanoid"/>
-			<attribute name="optional" value="true"/>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry excluding="src/" including="src/|src/main/|src/main/resources/|src/main/resources/WestEnglandRegular.ttf|src/main/resources/backgrounds/|src/main/resources/backgrounds/bg1.png|src/main/resources/backgrounds/bg2.png|src/main/resources/backgrounds/bg3.png|src/main/resources/backgrounds/bg4.png|src/main/resources/level/|src/main/resources/level/stage0.txt|src/main/resources/level/stage1.txt|src/main/resources/level/stage10.txt|src/main/resources/level/stage11.txt|src/main/resources/level/stage12.txt|src/main/resources/level/stage13.txt|src/main/resources/level/stage14.txt|src/main/resources/level/stage15.txt|src/main/resources/level/stage16.txt|src/main/resources/level/stage17.txt|src/main/resources/level/stage18.txt|src/main/resources/level/stage19.txt|src/main/resources/level/stage2.txt|src/main/resources/level/stage20.txt|src/main/resources/level/stage21.txt|src/main/resources/level/stage22.txt|src/main/resources/level/stage23.txt|src/main/resources/level/stage24.txt|src/main/resources/level/stage25.txt|src/main/resources/level/stage26.txt|src/main/resources/level/stage27.txt|src/main/resources/level/stage28.txt|src/main/resources/level/stage29.txt|src/main/resources/level/stage3.txt|src/main/resources/level/stage30.txt|src/main/resources/level/stage31.txt|src/main/resources/level/stage32.txt|src/main/resources/level/stage33.txt|src/main/resources/level/stage34.txt|src/main/resources/level/stage4.txt|src/main/resources/level/stage5.txt|src/main/resources/level/stage6.txt|src/main/resources/level/stage7.txt|src/main/resources/level/stage8.txt|src/main/resources/level/stage9.txt|src/module-info.java|src/openArcanoid/|src/openArcanoid/Alignment.java|src/openArcanoid/Ball.java|src/openArcanoid/Block.java|src/openArcanoid/BlockXTree.java|src/openArcanoid/BlockYTree.java|src/openArcanoid/Direction.java|src/openArcanoid/Engine.java|src/openArcanoid/Main.java|src/openArcanoid/Pad.java|src/openArcanoid/PowerUp.java|src/openArcanoid/PowerUpType.java|src/openArcanoid/Projectile.java|src/openArcanoid/Side.java|src/openArcanoid/Sprite.java|src/openArcanoid/Vector2D.java|src/openArcanoid/openArcanoid/|src/openArcanoid/package-info.java" kind="src" path=""/>
+	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/JavaFX">
 		<attributes>
 			<attribute name="module" value="true"/>

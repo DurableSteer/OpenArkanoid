@@ -1,0 +1,15 @@
+title=Round 15
+topPadding=3
+bg=/main/resources/backgrounds/bg3.png
+{lightblue,silver,silver,lightblue,lightblue,lightblue,lightblue,lightblue,silver,silver,lightblue}
+{lightblue,silver,yellow,silver,lightblue,lightblue,lightblue,silver,green,silver,lightblue}
+{lightblue,silver,yellow,yellow,silver,silver,silver,green,green,silver,lightblue}
+{lightblue,silver,yellow,yellow,yellow,silver,green,green,green,silver,lightblue}
+{lightblue,silver,yellow,yellow,yellow,silver,green,green,green,silver,lightblue}
+{lightblue,silver,yellow,yellow,yellow,silver,green,green,green,silver,lightblue}
+{lightblue,silver,yellow,yellow,yellow,silver,green,green,green,silver,lightblue}
+{lightblue,silver,yellow,yellow,yellow,silver,green,green,green,silver,lightblue}
+{lightblue,silver,yellow,yellow,yellow,silver,green,green,green,silver,lightblue}
+{lightblue,lightblue,silver,yellow,yellow,silver,green,green,silver,lightblue,lightblue}
+{lightblue,lightblue,lightblue,silver,yellow,silver,green,silver,lightblue,lightblue,lightblue}
+{lightblue,lightblue,lightblue,lightblue,silver,silver,silver,lightblue,lightblue,lightblue,lightblue}

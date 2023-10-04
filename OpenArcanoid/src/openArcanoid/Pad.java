@@ -34,7 +34,7 @@ public class Pad extends Sprite {
 	public boolean isLaser() {
 		return isLaser;
 	}
-	
+
 	@Override
 	public void setPosition(double x, double y) {
 		for(Ball b : balls) {
@@ -49,7 +49,7 @@ public class Pad extends Sprite {
 			else
 				b.setPosition(x+getWidth()/2-b.getWidth()/2,  y-b.getHeight()-1);
 		}
-		
+
 		pos.setX(x);
 		pos.setY(y);
 	}
@@ -84,6 +84,6 @@ public class Pad extends Sprite {
 		size.setX(normalSize);
 		isSticky = false;
 		isLaser = false;
-		balls = new ArrayList<Ball>();
+		balls = new ArrayList<>();
 	}
 }

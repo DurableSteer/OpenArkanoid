@@ -1,0 +1,8 @@
+title=Round 1
+bg=/main/resources/backgrounds/bg1.png
+(silver)
+(red)
+(blue)
+(yellow)
+(pink)
+(green)

@@ -86,17 +86,18 @@ public class Engine {
 		blocks = new BlockXTree();
 		points = 0;
 		unpause();
-	}
+		//powerUps.add(new PowerUp(200,200,200,10,PowerUpType.SIZEDWN));
+		}
 	public void next(boolean aPressed, boolean dPressed, double frameTimeDiffMod) {
 		//Moves all the Objects one turn checking for collisions
 		if(isPaused() || frameTimeDiffMod > 10)
 			return;
 
 		movePad(aPressed,dPressed,frameTimeDiffMod);
-		
+
 		movePowerUps(frameTimeDiffMod);
 		handlePowerUpCollision();
-		
+
 		moveShots(frameTimeDiffMod);
 		handleShotCollision();
 		//Ball movement
@@ -140,7 +141,7 @@ public class Engine {
 			p.setPosition(p.getPosition().getX(), p.getPosition().getY()-BASESPEED*frameTimeDiffMod);
 		}
 	}
- 
+
 	private void handleShotCollision() {
 		Iterator<Projectile> it = shots.iterator();
 		while(it.hasNext()) {
@@ -159,18 +160,18 @@ public class Engine {
 			if(!hitBlocks.isEmpty())
 				it.remove();
 			}
-				
+
 		}
 	}
 	private void handlePowerUpCollision() {
 		Iterator<PowerUp> it = powerUps.iterator();
-		
+
 		while(it.hasNext()) {
 			PowerUp p = it.next();
 			if(areColliding(pad,p)) {
 				switch(p.getPowerUpType()) {
 				case TRIPLE:{
-					ArrayList<Ball> newBalls = new ArrayList<>(); 
+					ArrayList<Ball> newBalls = new ArrayList<>();
 					for(Ball ball : balls) {
 						Ball extraBall = new Ball(ball);
 						extraBall.getDirection().rotate(Math.PI/6);
@@ -234,7 +235,7 @@ public class Engine {
 		else                			//ball hit a wall
 			b.reflectBorder(side);
 	}
-	private void handleBallPadCollision(Iterator it,Ball b, Ball tmp) {
+	private void handleBallPadCollision(Iterator<Ball> it,Ball b, Ball tmp) {
 		Side collisionSide = getCollisionSide(pad,tmp);
 		if(collisionSide == Side.TOP) {
 			double dist = getDistFromCenter(pad,tmp);
@@ -248,8 +249,6 @@ public class Engine {
 				b.setDirection(0,-1);
 				b.getDirection().rotate(-((Math.abs(dist) - (pad.getWidth()*0.20/2))/(pad.getWidth()*0.4))*(Math.PI/3));
 			}
-			if(b.getSpeedMult() < MAXSPEED)
-				b.setSpeedMult(b.getSpeedMult()+0.025);
 		}
 		else if(collisionSide == Side.LEFT){
 			b.setDirection(0, -1);
@@ -264,6 +263,10 @@ public class Engine {
 			pad.stick(b);
 			it.remove();
 		}
+		if(b.getSpeedMult() < BASESPEED)
+			b.setSpeedMult(b.getSpeedMult()+0.05);
+		else if(b.getSpeedMult() < MAXSPEED)
+			b.setSpeedMult(b.getSpeedMult()+0.025);
 	}
 	private void handleBallBlockCollisions(Ball b, Ball tmp) { //improve this logic
 		ArrayList<Block> collidingBlocks = blocks.findColliding(tmp);
@@ -398,17 +401,17 @@ public class Engine {
 	}
 
 	public String loadNextLevel() {
-		return loadLevel(System.getProperty("user.dir")+"/level/stage"+currLevel+".txt");
+		return loadLevel("/main/resources/level/stage"+currLevel+".txt");
 	}
 	public String loadLevel(String filename) {   //todo make this more robust
 		//reads a new level file into the Blocktree and returns the path to the BackgroundImage
 		Block[][] field = new Block[16][11];
 		double blockWidth = FIELDWIDTH/11;
 		double blockHeight = (FIELDHEIGHT*0.66)/16;
-		String backgroundImagePath = "/level/backgrounds/bg.png";
+		String backgroundImagePath = "/main/resources/backgrounds/bg1.png";
 		int topPadding = 3;
 		try {
-			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(filename)));
+			BufferedReader br = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(filename)));
 			int lineCounter = 0;
 			String line;
 

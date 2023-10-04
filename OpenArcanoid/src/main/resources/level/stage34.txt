@@ -1,0 +1,17 @@
+title=Round 35
+bg=/main/resources/backgrounds/bg3.png
+{,,,,,,,,,white}
+{,,,,,,,,,white,white}
+{,,,white,white,white,white}
+{,,,,white,white,white,white}
+{,,,,,gold,gold,gold}
+{,,white}
+{,white,orange,white}
+{white,orange,gold,orange,white}
+{,white,orange,white}
+{,,white,,,,,,,,orange}
+{,,pink,,,gold,,green,green,green}
+{green,,pink,,green,,green,,green,pink,green}
+{gold,green,pink,green,,pink,green,gold,green}
+{gold,green,pink,green,,green,,orange,green,green}
+{gold,gold,green,gold,green,,,green,green}

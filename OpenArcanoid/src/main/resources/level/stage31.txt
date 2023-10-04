@@ -1,0 +1,13 @@
+title=Round 32
+bg=/main/resources/backgrounds/bg4.png
+{,,gold,,gold,,gold,,gold}
+{,,gold,,gold,,gold,,gold}
+{,,gold,,gold,,gold,,gold}
+{,,gold,,gold,,gold,red,red}
+{,,gold,,gold,,gold,,gold}
+{,,gold,,gold,blue,blue,blue,blue}
+{,,gold,,gold,,gold,,gold}
+{,,gold,red,red,red,red,red,red}
+{,,gold,,gold,,gold,,gold}
+(yellow,7)
+(silver,7)

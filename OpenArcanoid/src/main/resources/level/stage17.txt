@@ -1,0 +1,12 @@
+title=Round 18
+bg=/main/resources/backgrounds/bg2.png
+{orange,,gold,yellow,yellow,yellow,yellow,yellow,gold,,orange}
+{orange,,gold,gold,yellow,yellow,yellow,gold,gold,,orange}
+{orange,,gold,,gold,yellow,gold,,gold,,orange}
+{orange,,gold,,green,silver,green,,gold,,orange}
+{orange,,gold,,green,,green,,gold,,orange}
+{orange,,gold,,green,,green,,gold,,orange}
+{orange,,gold,,green,,green,,gold,,orange}
+{orange,,gold,,green,,green,,gold,,orange}
+{orange,,gold,,green,,green,,gold,,orange}
+{orange,gold,gold,gold,green,,green,gold,gold,gold,orange}

@@ -7,7 +7,7 @@ public class PowerUp extends Sprite {
 		public PowerUp(double xPos,double yPos,double xSize,double ySize,PowerUpType powerUp) {
 			super(xPos,yPos,xSize,ySize);
 			this.powerUp = powerUp;
-			
+
 			switch(powerUp) {
 			case TRIPLE:{
 				color = Color.web("#57b7d8");

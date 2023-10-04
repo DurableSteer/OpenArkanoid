@@ -1,0 +1,13 @@
+title=Round 25
+bg=/main/resources/backgrounds/bg1.png
+(red)
+(green)
+(blue)
+{gold,gold,gold,gold,red,red,red,gold,gold,gold,gold}
+{gold,green,green,gold,silver,silver,silver,gold,green,green,gold}
+{gold,red,red,gold,,,,gold,blue,blue,gold}
+{gold,,,,,,,,,,gold}
+{gold,,,,,,,,,,gold}
+{gold,,,,,,,,,,gold}
+{gold,,,gold,green,green,green,gold,,,gold}
+{gold,silver,silver,gold,gold,gold,gold,gold,silver,silver,gold}
