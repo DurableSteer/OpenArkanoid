@@ -325,6 +325,7 @@ public class Main extends Application {
 		drawPowerUps(gc);
 		drawMovables(gc);
 		drawBlocks(gc);
+		drawHUD(borderCanvas.getGraphicsContext2D());
 		canvas = nextFrame;
 		root.getChildren().add(canvas);
 
@@ -360,6 +361,14 @@ public class Main extends Application {
 			double height = p.getHeight()*windowHeightMod;
 			gc.setFill(p.getColor());
 			gc.fillRoundRect(xPos, yPos, width, height, 10, 10);
+			gc.setStroke(Color.WHITE);
+			gc.setLineWidth(relY(2));
+			gc.strokeLine(xPos+relX(3), yPos+relY(4), xPos+width-relX(3), yPos+relY(4));
+			gc.setLineWidth(relX(2));
+			gc.strokeLine(xPos+relX(3), yPos+relY(4), xPos+relX(3), yPos+height/2);
+			gc.setFill(p.getTextColor());
+			gc.setFont(Font.loadFont(FONTPATH, relX(18)));
+			gc.fillText(p.getText(), xPos+width/2-relX(4), yPos+height-relY(4));
 
 		}
 	}
@@ -439,19 +448,22 @@ public class Main extends Application {
 			yPos = shot.getPosition().getY()*windowHeightMod;
 			width = shot.getWidth()*windowWidthMod;
 			height = shot.getHeight()*windowHeightMod;
+			gc.setFill(Color.web("fc9a35"));
+			gc.fillRect(xPos-relX(1), yPos+relY(1), width+relX(2), height-relY(2));
 			gc.setFill(shot.getColor());
 			gc.fillRect(xPos, yPos, width, height);
+			
 		}
 	}
 	private void drawGameOver(Stage primaryStage,GraphicsContext gc) {
 		loop.stop();
 		gc.setFill(Color.WHITE);
 		gc.setTextAlign(TextAlignment.CENTER);
-		gc.setFont(Font.loadFont(FONTPATH, FONTSIZE));
+		gc.setFont(Font.loadFont(FONTPATH, relX(FONTSIZE+20)));
 		gc.fillText("Game Over!", RENDERWIDTH*windowWidthMod*0.5, RENDERHEIGHT*windowHeightMod*0.4);//centered
-		gc.setFont(Font.loadFont(FONTPATH, FONTSIZE-20));
+		gc.setFont(Font.loadFont(FONTPATH, relX(FONTSIZE-15)));
 		gc.fillText("Your Score: "+engine.getPoints(), RENDERWIDTH*windowWidthMod*0.5, RENDERHEIGHT*windowHeightMod*0.48);
-		gc.setFont(Font.loadFont(FONTPATH, FONTSIZE-35));
+		gc.setFont(Font.loadFont(FONTPATH, relX(FONTSIZE-35)));
 		gc.fillText("Press any key to continue.", RENDERWIDTH*windowWidthMod*0.5, RENDERHEIGHT*windowHeightMod*0.87);
 		canvas.getScene().setOnKeyPressed(new EventHandler<KeyEvent>() {
 			@Override
@@ -465,10 +477,10 @@ public class Main extends Application {
 	private void drawStageCleared(Stage primaryStage,GraphicsContext gc) {
 		loop.stop();
 		gc.setTextAlign(TextAlignment.CENTER);
-		gc.setFont(Font.loadFont(FONTPATH, FONTSIZE));
+		gc.setFont(Font.loadFont(FONTPATH, relX(FONTSIZE+20)));
 		gc.setFill(FONTCOLOR);
 		gc.fillText("Stage Clear!", RENDERWIDTH*windowWidthMod*0.5, RENDERHEIGHT*windowHeightMod*0.4);
-		gc.setFont(Font.loadFont(FONTPATH, FONTSIZE-35));
+		gc.setFont(Font.loadFont(FONTPATH, relX(FONTSIZE-35)));
 		gc.fillText("Press any key to continue.",RENDERWIDTH*windowWidthMod*0.5,RENDERHEIGHT*windowHeightMod*0.87);
 		canvas.getScene().setOnKeyPressed(new EventHandler<KeyEvent>() {
 			@Override
@@ -524,7 +536,28 @@ public class Main extends Application {
 		}
 		gc.strokeRoundRect(x, y, xSize, ySize, 7, 7);
 	}
-
+	private void drawHUD(GraphicsContext gc) {
+		double xPos = relX(170);
+		double distBetw = relX(150);
+		
+		//draw current lives
+		gc.setFill(Color.BLACK);
+		gc.fillRect(xPos, 0, 73, 12);
+		gc.setFill(Color.RED);
+		gc.setFont(Font.loadFont(FONTPATH, 18));
+		gc.fillText("1UP", xPos+relX(2), 11);
+		gc.setFill(Color.WHITE);
+		gc.fillText(String.format("%02d", engine.getLives()), xPos+47, 11);
+		
+		//draw current points
+		gc.setFill(Color.BLACK);
+		gc.fillRect(xPos+distBetw, 0, 188, 12);
+		gc.setFill(Color.RED);
+		gc.fillText("HIGH SCORE", xPos+distBetw+relX(1), 11);
+		gc.setFill(Color.WHITE);
+		gc.fillText(String.format("%05d", engine.getPoints()), xPos+distBetw+130, 11);
+	}
+	
 	private double relX(double abs) {
 		//returns the relative length to abs
 		return abs*windowWidthMod;

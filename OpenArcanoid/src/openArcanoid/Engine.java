@@ -10,7 +10,7 @@ import java.util.Random;
 import javafx.scene.paint.Color;
 
 public class Engine {
-	private final int BASELIVES = 4;
+	private final int BASELIVES = 3;
 	private final double BASESPEED = 0.75;
 	private final double MAXSPEED = 1.75;
 	private final double FIELDWIDTH = 600;
@@ -61,7 +61,7 @@ public class Engine {
 
 	public boolean levelCleared() {
 		for(Block block : blocks.getAllBlocks()) {
-			if(!block.getColor().equals(Color.web("f1bd3a")))
+			if(!block.getColor().equals(Color.web("f1bd3a")))//gold blocks cant be destroyed
 				return false;
 		}
 
@@ -123,8 +123,8 @@ public class Engine {
 				handleBallPadCollision(it,b, tmp);
 			else
 				handleBallBlockCollisions(b,tmp);
-
 			b.getPosition().add(b.getDirection().multBy(ballSpeed));
+			
 		}
 
 	}
@@ -254,7 +254,9 @@ public class Engine {
 			b.reflectBorder(Side.TOP);
 			soundLib.play(SoundEffect.BUMPBORDER);
 		}
-		else {                			//ball hit a wall
+		else {        //ball hit a wall
+			if(b.getDirection().getX() == 1) //dont let the ball enter a horizontal direction
+				b.getDirection().rotate(Math.PI/6);
 			b.reflectBorder(side);
 			soundLib.play(SoundEffect.BUMPBORDER);
 		}
@@ -631,6 +633,7 @@ public class Engine {
 				break;
 			}
 			}
+			//type = PowerUpType.LAZERS;
 			powerUps.add(new PowerUp(blockXMid,blockYMid,block.getWidth()*0.6,block.getHeight(),type));
 			//System.out.println("spawned: "+type);
 		}

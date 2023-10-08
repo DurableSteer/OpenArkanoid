@@ -10,7 +10,7 @@ public class Block extends Sprite {
 		super(xPosition, yPosition, xSize, ySize);
 		this.color = color;
 		hp = parseHp(color,roundNr);
-		points = parsePoints(color, roundNr);
+		points = parsePoints(color, roundNr+1);
 	}
 	private int parseHp(Color color,int roundNr) {
 		if(color.equals(Color.web("bdbdbd")))//silver
