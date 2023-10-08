@@ -23,6 +23,7 @@ public class Engine {
 	private ArrayList<Ball> balls = new ArrayList<>();
 	private ArrayList<Projectile> shots = new ArrayList<>();
 	private ArrayList<PowerUp> powerUps = new ArrayList<>();
+	private SoundLib soundLib = new SoundLib();
 	private Pad pad;
 	private int currLevel = 0;
 	private Random rand = new Random();
@@ -64,15 +65,22 @@ public class Engine {
 				return false;
 		}
 
+		soundLib.play(SoundEffect.LEVELCLEARED);
 		currLevel = (currLevel+1)%36;
 		balls = new ArrayList<>();
+		shots = new ArrayList<>();
+		powerUps = new ArrayList<>();
 		blocks = new BlockXTree();
 		return true;
 
 	}
 
 	public boolean gameOver() {
-		return lives == 0;
+		if(lives == 0) {
+			soundLib.play(SoundEffect.GAMEOVER);
+			return true;
+		}
+		return false;
 	}
 	public void reset() {
 		//initializes the base values for a new game
@@ -129,6 +137,8 @@ public class Engine {
 			pad.setPosition(pad.getPosition().getX()-padSpeed,  pad.getPosition().getY());
 		else if(dPressed && ((pad.getPosition().getX()+pad.getWidth()+padSpeed) < FIELDWIDTH))
 			pad.setPosition(pad.getPosition().getX()+padSpeed,  pad.getPosition().getY());
+		if((aPressed && ((pad.getPosition().getX()-padSpeed) < 0)) || (dPressed && ((pad.getPosition().getX()+pad.getWidth()+padSpeed) > FIELDWIDTH)))
+			soundLib.play(SoundEffect.BUMPBORDER);
 	}
 	private void movePowerUps(double frameTimeDiffMod) {
 		for(PowerUp p : powerUps) {
@@ -151,6 +161,7 @@ public class Engine {
 			ArrayList<Block> hitBlocks = blocks.findColliding(p);
 			for(Block b : hitBlocks) {
 				b.getHitBy(p);
+				playBlockHitSound(b);
 				if(b.getHitpoints() <= 0) {
 					points = points+b.getPoints();
 					blocks.delete(b);
@@ -178,36 +189,44 @@ public class Engine {
 						extraBall = new Ball(ball);
 						extraBall.getDirection().rotate(-Math.PI/6);
 						newBalls.add(new Ball(extraBall));
+						soundLib.play(SoundEffect.TRIPLE);
 					}
 					balls.addAll(newBalls);
 					break;
 				}
 				case SIZEUP:{
 					pad.setWidth((FIELDWIDTH/11)*2);
+					soundLib.play(SoundEffect.SIZEUP);
 					break;
 				}
 				case LAZERS:{
 					pad.setLaser();
+					soundLib.play(SoundEffect.LASER);
 					break;
 				}
 				case SIZEDOWN:{
 					pad.setWidth((FIELDWIDTH/11)*0.5);
+					soundLib.play(SoundEffect.SIZEDOWN);
 					break;
 				}
 				case SPEEDDWN:{
 					for(Ball b : balls)
 						b.setSpeedMult(b.getSpeedMult()*0.5);
+					soundLib.play(SoundEffect.SLOWDOWN);
 					break;
 				}
 				case STICKY:{
 					pad.setSticky();
+					soundLib.play(SoundEffect.STICKY);
 					break;
 				}
 				case PLAYER:{
 					lives++;
+					soundLib.play(SoundEffect.EXTRALIVE);
 					break;
 				}
 				case BREAK:{
+					soundLib.play(SoundEffect.BREAK);
 					blocks = new BlockXTree();
 					break;
 				}
@@ -222,17 +241,23 @@ public class Engine {
 		if((side == Side.BOTTOM) ) { // last ball dropped off the play area
 			if((!pad.hasBall()) && (balls.size() == 1)) {
 				lives--;
+				soundLib.play(SoundEffect.LIVELOST);
 				pad.reset();
 				pad.setPosition(FIELDWIDTH/2-pad.getWidth()/2,pad.getPosition().getY());
+
 				if(lives > 0)
 					pad.addBall(new Ball());
 			}
 			it.remove();
 		}
-		else if(side == Side.TOP)                  //ball hit the top
+		else if(side == Side.TOP) {                  //ball hit the top
 			b.reflectBorder(Side.TOP);
-		else                			//ball hit a wall
+			soundLib.play(SoundEffect.BUMPBORDER);
+		}
+		else {                			//ball hit a wall
 			b.reflectBorder(side);
+			soundLib.play(SoundEffect.BUMPBORDER);
+		}
 	}
 	private void handleBallPadCollision(Iterator<Ball> it,Ball b, Ball tmp) {
 		Side collisionSide = getCollisionSide(pad,tmp);
@@ -266,6 +291,7 @@ public class Engine {
 			b.setSpeedMult(b.getSpeedMult()+0.05);
 		else if(b.getSpeedMult() < MAXSPEED)
 			b.setSpeedMult(b.getSpeedMult()+0.025);
+		soundLib.play(SoundEffect.PADHIT);
 	}
 	private void handleBallBlockCollisions(Ball b, Ball tmp) { //improve this logic
 		ArrayList<Block> collidingBlocks = blocks.findColliding(tmp);
@@ -284,6 +310,7 @@ public class Engine {
 				if(areColliding(block,tmp) || areColliding(block2,tmp)) {
 					b.reflectSprite(collisionSide1);
 					block.getHitBy(b);
+					playBlockHitSound(block);
 					if(block.getHitpoints() == 0) {
 						points += block.getPoints();
 						blocks.delete(block);
@@ -303,12 +330,14 @@ public class Engine {
 					}
 
 					block.getHitBy(b);
+					playBlockHitSound(block);
 					if(block.getHitpoints() == 0) {
 						points += block.getPoints();
 						blocks.delete(block);
 						spawnPowerUp(block);
 					}
 					block2.getHitBy(b);
+					playBlockHitSound(block2);
 					if(block2.getHitpoints() == 0) {
 						points += block2.getPoints();
 						blocks.delete(block2);
@@ -327,6 +356,7 @@ public class Engine {
 					return;
 				b.reflectSprite(collisionSide);
 				block.getHitBy(b);
+				playBlockHitSound(block);
 				if(block.getHitpoints() == 0) {
 					points += block.getPoints();
 					blocks.delete(block);
@@ -400,6 +430,7 @@ public class Engine {
 	}
 
 	public String loadNextLevel() {
+		soundLib.play(SoundEffect.NEWLEVEL);
 		return loadLevel("/main/resources/level/stage"+currLevel+".txt");
 	}
 	public String loadLevel(String filename) {   //todo make this more robust
@@ -502,12 +533,24 @@ public class Engine {
 
 	private Side getCollisionSide(Block block, Ball ball) {
 		Side side = getCollisionSide(block.getPosition(),block.getSize(),ball);
-		if((side == Side.LEFT && ball.getDirection().getX() < 0) || //filter out false collisionside detection at corners
-				(side == Side.RIGHT && ball.getDirection().getX() > 0) ||
-				(side == Side.TOP && ball.getDirection().getY() < 0) ||
-				(side == Side.BOTTOM && ball.getDirection().getY() > 0))
+		if((side == Side.LEFT && ball.getDirection().getX() < 0) || (side == Side.RIGHT && ball.getDirection().getX() > 0)) {
+			if(ball.getPosition().getY() < block.getPosition().getY())
+				return Side.TOP;
+			else if(ball.getPosition().getY() > block.getPosition().getY())
+				return Side.BOTTOM;
+			else
 				return null;
-		return side;
+		}
+		else if((side == Side.TOP && ball.getDirection().getY() < 0) || (side == Side.BOTTOM && ball.getDirection().getY() > 0)) {
+			if(ball.getPosition().getX() < block.getPosition().getX())
+				return Side.LEFT;
+			else if(ball.getPosition().getX() > block.getPosition().getX())
+				return Side.RIGHT;
+			else
+				return null;
+		}
+		else
+			return side;
 	}
 	private Side getCollisionSide(Pad pad, Ball ball) {
 		return getCollisionSide(pad.getPosition(),pad.getSize(),ball);
@@ -538,6 +581,17 @@ public class Engine {
 		return side;
 	}
 
+	private void playBlockHitSound(Block block) {
+		Color color = block.getColor();
+		if((color.equals(Color.web("f1bd3a")) || color.equals(Color.web("bdbdbd")))){
+				if(block.getHitpoints() <= 0)
+					soundLib.play(SoundEffect.METALBLOCKKILL);
+				else
+					soundLib.play(SoundEffect.METALBLOCKHIT);
+		}
+		else
+			soundLib.play(SoundEffect.BLOCKKILL);
+	}
 	private void spawnPowerUp(Block block) {
 		//adds a power up after a block has been destroyed with POWERUPCHANCE of happening
 		if((rand.nextDouble() < POWERUPCHANCE) && (!block.getColor().equals(Color.web("bdbdbd")))) { //silver blocks may not spawn power ups
@@ -578,6 +632,7 @@ public class Engine {
 			}
 			}
 			powerUps.add(new PowerUp(blockXMid,blockYMid,block.getWidth()*0.6,block.getHeight(),type));
+			//System.out.println("spawned: "+type);
 		}
 	}
 	private Color parseColor(String color) {
@@ -636,12 +691,14 @@ public class Engine {
 	public void fireBall() {
 		if(pad.hasBall()) {
 			balls.add(pad.getOneBall());
+			soundLib.play(SoundEffect.FIREBALL);
 		}
 	}
 	public void fireLaser() {
-		if(shots.size() < 6) {
+		if(shots.size() < 4) {
 			shots.add(new Projectile(pad.getPosition().getX()-2,pad.getPosition().getY(),3,pad.getHeight()));
 			shots.add(new Projectile(pad.getPosition().getX()+pad.getWidth()-6,pad.getPosition().getY(),3,pad.getHeight()));
+			soundLib.play(SoundEffect.FIRELASER);
 		}
 	}
 }
