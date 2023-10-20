@@ -255,8 +255,8 @@ public class Engine {
 			soundLib.play(SoundEffect.BUMPBORDER);
 		}
 		else {        //ball hit a wall
-			if(b.getDirection().getX() == 1) //dont let the ball enter a horizontal direction
-				b.getDirection().rotate(Math.PI/6);
+			if(Math.abs(b.getDirection().getX()-1) < 0.0001) //dont let the ball enter a horizontal direction
+				b.getDirection().rotate(0.1);
 			b.reflectBorder(side);
 			soundLib.play(SoundEffect.BUMPBORDER);
 		}
@@ -633,7 +633,7 @@ public class Engine {
 				break;
 			}
 			}
-			//type = PowerUpType.LAZERS;
+			//type = PowerUpType.BREAK;
 			powerUps.add(new PowerUp(blockXMid,blockYMid,block.getWidth()*0.6,block.getHeight(),type));
 			//System.out.println("spawned: "+type);
 		}
@@ -681,6 +681,9 @@ public class Engine {
 	}
 	public Pad getPad() {
 		return pad;
+	}
+	public SoundLib getSoundLib() {
+		return soundLib;
 	}
 	public ArrayList<Projectile> getShots(){
 		return shots;

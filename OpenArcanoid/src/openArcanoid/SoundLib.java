@@ -3,6 +3,7 @@ package openArcanoid;
 import javafx.scene.media.AudioClip;
 
 public class SoundLib {
+	private double volume = 0.35;
 	AudioClip blockKill = new AudioClip(getClass().getResource("/main/resources/sounds/blockKill.mp3").toString());
 	AudioClip padHit = new AudioClip(getClass().getResource("/main/resources/sounds/padHit.mp3").toString());
 	AudioClip metalBlockHit = new AudioClip(getClass().getResource("/main/resources/sounds/metalBlockHit.mp3").toString());
@@ -24,84 +25,96 @@ public class SoundLib {
 	AudioClip gameOver = new AudioClip(getClass().getResource("/main/resources/sounds/gameOver.mp3").toString());
 
 	public void play(SoundEffect effect) {
+		AudioClip selectedAudio = null;
 		switch(effect) {
 		case BLOCKKILL:{
-			blockKill.play();
+			selectedAudio = blockKill;
 			break;
 		}
 		case PADHIT:{
-			padHit.play();
+			selectedAudio = padHit;
 			break;
 		}
 		case METALBLOCKHIT:{
-			metalBlockHit.play();
+			selectedAudio = metalBlockHit;
 			break;
 		}
 		case METALBLOCKKILL:{
-			metalBlockKill.play();
+			selectedAudio = metalBlockKill;
 			break;
 		}
 		case FIREBALL:{
-			fireBall.play();
+			selectedAudio = fireBall;
 			break;
 		}
 		case FIRELASER:{
-			fireLaser.play();
+			selectedAudio = fireLaser;
 			break;
 		}
 		case BUMPBORDER:{
 			if(!bumpBorder.isPlaying())
-				bumpBorder.play();
+				selectedAudio = bumpBorder;
 			break;
 		}
 		case LASER:{
-			laser.play();
+			selectedAudio = laser;
 			break;
 		}
 		case SIZEDOWN:{
-			sizeDown.play();
+			selectedAudio = sizeDown;
 			break;
 		}
 		case SIZEUP:{
-			sizeUp.play();
+			selectedAudio = sizeUp;
 			break;
 		}
 		case STICKY:{
-			sticky.play();
+			selectedAudio = sticky;
 			break;
 		}
 		case TRIPLE:{
-			triple.play();
+			selectedAudio = triple;
 			break;
 		}
 		case EXTRALIVE:{
-			extraLive.play();
+			selectedAudio = extraLive;
 			break;
 		}
 		case SLOWDOWN:{
-			slowDown.play();
+			selectedAudio = slowDown;
 			break;
 		}
 		case BREAK:{
-			breakOut.play();
+			selectedAudio = breakOut;
 			break;
 		}
 		case LIVELOST:{
-			liveLost.play();
+			selectedAudio = liveLost;
 			break;
 		}
 		case LEVELCLEARED:{
-			levelCleared.play();
+			selectedAudio = levelCleared;
 			break;
 		}
 		case NEWLEVEL:{
-			newLevel.play();
+			selectedAudio = newLevel;
 			break;
 		}
 		case GAMEOVER:{
-			gameOver.play();
+			selectedAudio = gameOver;
 			break;
 		}
 		}
+		if(selectedAudio != null)
+			selectedAudio.play(volume);
+		
+	}
+	
+	public double getVolume() {
+		return volume;
+	}
+	public void setVolume(double newVolume) {
+		volume = newVolume;
+		play(SoundEffect.METALBLOCKHIT);
 	}
 }

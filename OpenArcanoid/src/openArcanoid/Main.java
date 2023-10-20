@@ -13,9 +13,11 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.MotionBlur;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
@@ -27,6 +29,7 @@ import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -122,7 +125,7 @@ public class Main extends Application {
 				engine.reset();
 				String bgPath = engine.loadNextLevel();
 				try {
-					background = new BackgroundImage(new Image(getClass().getResourceAsStream(bgPath)),BackgroundRepeat.REPEAT,BackgroundRepeat.REPEAT,BackgroundPosition.CENTER,new BackgroundSize(1024,1024,false,false,true,false));
+					background = new BackgroundImage(new Image(getClass().getResourceAsStream(bgPath)),BackgroundRepeat.REPEAT,BackgroundRepeat.REPEAT,BackgroundPosition.DEFAULT,null);
 				} catch (Exception e1) {
 					System.out.println(e1.getMessage());
 				}
@@ -188,30 +191,29 @@ public class Main extends Application {
 			menuGrid.add(continueGame,1,0);
 		}
 		menuGrid.add(newGame,1,1);
-		if(!engine.isPaused()) {
-			Label settings = new Label("Settings");
-			settings.setFont(Font.loadFont(FONTPATH, FONTSIZE));
-			settings.setTextFill(FONTCOLOR);
-			settings.setOnMouseClicked(new EventHandler<MouseEvent>() {
-				@Override
-				public void handle(MouseEvent e) {
-					drawSettings(primaryStage);
-				}
-			});
-			settings.setOnMouseEntered(new EventHandler<MouseEvent>() {
-				@Override
-				public void handle(MouseEvent e) {
-					menuGrid.add(cursor,0,2);
-				}
-			});
-			settings.setOnMouseExited(new EventHandler<MouseEvent>() {
-				@Override
-				public void handle(MouseEvent e) {
-					menuGrid.getChildren().remove(cursor);
-				}
-			});
-			menuGrid.add(settings,1,2);
-		}
+
+		Label settings = new Label("Settings");
+		settings.setFont(Font.loadFont(FONTPATH, FONTSIZE));
+		settings.setTextFill(FONTCOLOR);
+		settings.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				drawSettings(primaryStage);
+			}
+		});
+		settings.setOnMouseEntered(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				menuGrid.add(cursor,0,2);
+			}
+		});
+		settings.setOnMouseExited(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				menuGrid.getChildren().remove(cursor);
+			}
+		});
+		menuGrid.add(settings,1,2);
 		menuGrid.add(quit,1,3);
 		menuGrid.setMaxSize(RENDERWIDTH*windowWidthMod*0.8, RENDERHEIGHT*windowHeightMod*0.9);
 		menuGrid.setPadding(new Insets(0,menuGrid.getColumnConstraints().get(0).getPrefWidth(),0,0));
@@ -224,18 +226,27 @@ public class Main extends Application {
 		StackPane root  = new StackPane();
 		root.setAlignment(Pos.CENTER);
 		Scene scene = new Scene(root, RENDERWIDTH*windowWidthMod, RENDERHEIGHT*windowHeightMod);
+		scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
+			@Override
+			public void handle(KeyEvent e) {
+				if(e.getCode() == KeyCode.ESCAPE) 
+					drawMenu(primaryStage);
+			}
+			});
 		root.setBackground(new Background(new BackgroundFill(Color.BLACK,CornerRadii.EMPTY,Insets.EMPTY)));
-		GridPane menuGrid = new GridPane(2,2);
+		GridPane menuGrid = new GridPane();
 		menuGrid.getColumnConstraints().add(new ColumnConstraints(30));
 		ColumnConstraints menuColConst = new ColumnConstraints();
 		menuColConst.setHalignment(HPos.CENTER);
 		menuGrid.getColumnConstraints().add(menuColConst);
 		for(int i=0;i<2;i++)
-			menuGrid.getRowConstraints().add(new RowConstraints(35));
+			menuGrid.getRowConstraints().add(new RowConstraints(50));
 		menuGrid.setAlignment(Pos.CENTER);
+		
 		TextField size = new TextField(RENDERWIDTH*windowWidthMod+"x"+RENDERHEIGHT*windowHeightMod);
-		Label setSize = new Label("Set Size");
-		setSize.setFont(Font.loadFont(FONTPATH, FONTSIZE));
+		size.setFont(Font.loadFont(FONTPATH, FONTSIZE-25));
+		Label setSize = new Label("set");
+		setSize.setFont(Font.loadFont(FONTPATH, FONTSIZE-25));
 		setSize.setTextFill(FONTCOLOR);
 		setSize.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
@@ -245,7 +256,7 @@ public class Main extends Application {
 					windowWidthMod = Double.parseDouble(args[0])/RENDERWIDTH;
 					windowHeightMod = Double.parseDouble(args[1])/RENDERHEIGHT;
 					canvas = new Canvas(RENDERWIDTH*windowWidthMod,RENDERHEIGHT*windowHeightMod);
-					drawMenu(primaryStage);
+					drawSettings(primaryStage);
 				}catch(IndexOutOfBoundsException ex) {
 					System.out.println("Please input the new windowsize in the following format: 1280x720 .");
 				}
@@ -263,8 +274,84 @@ public class Main extends Application {
 				menuGrid.getChildren().remove(cursor);
 			}
 		});
-		menuGrid.add(size,1,0);
-		menuGrid.add(setSize,1,1);
+		size.setOnMouseEntered(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				menuGrid.add(cursor, 0, 1);
+			}
+		});
+		size.setOnMouseExited(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				menuGrid.getChildren().remove(cursor);
+			}
+		});
+		size.setOnKeyPressed(new EventHandler<KeyEvent>() {
+			@Override
+			public void handle(KeyEvent e) {
+				if(e.getCode() == KeyCode.ENTER) {
+					try {
+						String[] args = size.getText().strip().split("x");
+						windowWidthMod = Double.parseDouble(args[0])/RENDERWIDTH;
+						windowHeightMod = Double.parseDouble(args[1])/RENDERHEIGHT;
+						canvas = new Canvas(RENDERWIDTH*windowWidthMod,RENDERHEIGHT*windowHeightMod);
+						drawSettings(primaryStage);
+					}catch(IndexOutOfBoundsException ex) {
+						System.out.println("Please input the new windowsize in the following format: 1280x720 .");
+					}
+				}
+					
+			}
+		});
+		Label windowSizeLabel = new Label("window size");
+		windowSizeLabel.setFont(Font.loadFont(FONTPATH, FONTSIZE-25));
+		windowSizeLabel.setTextFill(FONTCOLOR);
+		VBox windowSize = new VBox();
+		GridPane windowSizeLabelPane = new GridPane();
+		windowSizeLabelPane.add(windowSizeLabel,0,0);
+		GridPane setSizePane = new GridPane();
+		setSizePane.setAlignment(Pos.BASELINE_LEFT);
+		setSizePane.add(setSize, 0, 0);
+		windowSize.getChildren().add(windowSizeLabelPane);
+		windowSize.getChildren().add(size);
+		windowSize.getChildren().add(setSizePane);
+		
+		
+		Label volumeLabel = new Label("Volume");
+		volumeLabel.setFont(Font.loadFont(FONTPATH, FONTSIZE-25));
+		volumeLabel.setTextFill(FONTCOLOR);
+		Slider volume = new Slider(0,1,engine.getSoundLib().getVolume());
+		volume.setOnMouseReleased(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				engine.getSoundLib().setVolume(volume.getValue());
+			}
+		});
+		volume.setOnMouseEntered(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				menuGrid.add(cursor, 0, 0);
+			}
+		});
+		volume.setOnMouseExited(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				menuGrid.getChildren().remove(cursor);
+			}
+		});
+		VBox volumeSlider = new VBox();
+		GridPane volumeSliderLabel = new GridPane();
+		volumeSliderLabel.add(volumeLabel,1,0);
+		volumeSlider.getChildren().add(volumeSliderLabel);
+		volumeSlider.getChildren().add(volume);
+		
+		
+		if(engine.isPaused()) 
+			size.setEditable(false);
+		menuGrid.add(volumeSlider, 1, 0);
+		menuGrid.add(windowSize,1,1);
+		
+
 		menuGrid.setPadding(new Insets(0,menuGrid.getColumnConstraints().get(0).getPrefWidth(),0,0));//center only the right column to the window
 		menuGrid.setMaxSize(RENDERWIDTH*windowWidthMod*0.8, RENDERHEIGHT*windowHeightMod*0.9);
 		root.getChildren().add(menuGrid);
@@ -425,7 +512,7 @@ public class Main extends Application {
 		else {
 			double padWidth = width*0.6;
 			double bouncerWidth = (width-padWidth)/2;
-			gc.setFill(Color.web("d82800"));
+			gc.setFill(Color.web("d92400"));
 			gc.fillRoundRect(xPos+relX(3),yPos-relY(1),bouncerWidth,height+relY(2),relX(12),relY(15));
 			gc.fillRoundRect(xPos-relX(3)+width-bouncerWidth,yPos-relY(1),bouncerWidth,height+relY(2),relX(12),relY(15));
 			gc.strokeLine(xPos+relX(5), yPos+relY(2), xPos+relX(5), yPos+height-relY(2));
@@ -488,7 +575,7 @@ public class Main extends Application {
 				canvas.getScene().removeEventFilter(KeyEvent.KEY_PRESSED, this);
 				String bgPath = engine.loadNextLevel();
 				try {
-					background = new BackgroundImage(new Image(getClass().getResourceAsStream(bgPath)),BackgroundRepeat.REPEAT,BackgroundRepeat.REPEAT,BackgroundPosition.CENTER,new BackgroundSize(1024,1024,false,false,true,false));
+					background = new BackgroundImage(new Image(getClass().getResourceAsStream(bgPath)),BackgroundRepeat.REPEAT,BackgroundRepeat.REPEAT,BackgroundPosition.CENTER,null);
 				} catch (Exception e1) {
 					System.out.println(e1.getMessage());
 				}
