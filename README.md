@@ -6,6 +6,7 @@ Motivated by a deep appreciation for the original Arkanoid, I embarked on this p
 I would like to extend my heartfelt gratitude to Kevin Richey for generously providing the West_England font, accessible via https://www.fontspace.com/west-england-font-f9616. Special thanks to catchspider for the captivating and customizable backgrounds, available at https://github.com/catchspider2002/svelte-svg-patterns. Additionally, I appreciate Pixabay for offering an array of sound effects, and credit goes to Eric Fredricksen and DrPetter for their contributions, sourced respectively from https://pixabay.com/sound-effects/ and https://pixabay.com/sound-effects/. Last but not least, I express my thanks to the jdeploy devs for their invaluable service.
 
 Feel free to explore, contribute, and enjoy the enhanced gameplay of Arkanoid in this open-source adaptation
-#How to install
+
+
 The current installer including the dependencies can be downloaded from https://www.jdeploy.com/~openarkanoid 
 or via npm as the Package openarkanoid.
